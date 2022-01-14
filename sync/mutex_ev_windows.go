@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"bitbucket.org/avd/go-ipc/internal/allocator"
-	"bitbucket.org/avd/go-ipc/internal/common"
-	"bitbucket.org/avd/go-ipc/internal/helper"
-	"bitbucket.org/avd/go-ipc/mmf"
-	"bitbucket.org/avd/go-ipc/shm"
+	"github.com/avdva/go-ipc/internal/allocator"
+	"github.com/avdva/go-ipc/internal/common"
+	"github.com/avdva/go-ipc/internal/helper"
+	"github.com/avdva/go-ipc/mmf"
+	"github.com/avdva/go-ipc/shm"
 
 	"github.com/pkg/errors"
 	"golang.org/x/sys/windows"

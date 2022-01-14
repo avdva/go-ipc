@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"unsafe"
 
-	"bitbucket.org/avd/go-ipc/internal/allocator"
-	"bitbucket.org/avd/go-ipc/internal/common"
+	"github.com/avdva/go-ipc/internal/allocator"
+	"github.com/avdva/go-ipc/internal/common"
 
 	"golang.org/x/sys/unix"
 )

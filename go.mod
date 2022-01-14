@@ -1,9 +1,14 @@
-module bitbucket.org/avd/go-ipc
+module github.com/avdva/go-ipc
 
-go 1.12
+go 1.17
 
 require (
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.3.0
-	golang.org/x/sys v0.0.0-20190507053917-2953c62de483
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 )

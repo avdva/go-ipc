@@ -8,11 +8,11 @@ import (
 	"os"
 	"time"
 
-	"bitbucket.org/avd/go-ipc/internal/allocator"
-	"bitbucket.org/avd/go-ipc/internal/array"
-	"bitbucket.org/avd/go-ipc/internal/helper"
-	"bitbucket.org/avd/go-ipc/mmf"
-	"bitbucket.org/avd/go-ipc/shm"
+	"github.com/avdva/go-ipc/internal/allocator"
+	"github.com/avdva/go-ipc/internal/array"
+	"github.com/avdva/go-ipc/internal/helper"
+	"github.com/avdva/go-ipc/mmf"
+	"github.com/avdva/go-ipc/shm"
 	"github.com/pkg/errors"
 )
 

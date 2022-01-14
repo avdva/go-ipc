@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"bitbucket.org/avd/go-ipc/internal/allocator"
+	"github.com/avdva/go-ipc/internal/allocator"
 )
 
 const (

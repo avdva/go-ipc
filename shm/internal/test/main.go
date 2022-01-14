@@ -8,8 +8,8 @@ import (
 	"os"
 	"strconv"
 
-	"bitbucket.org/avd/go-ipc/internal/test"
-	"bitbucket.org/avd/go-ipc/mmf"
+	"github.com/avdva/go-ipc/internal/test"
+	"github.com/avdva/go-ipc/mmf"
 )
 
 var (
