@@ -5,13 +5,13 @@
 package mmf
 
 import (
+	"fmt"
 	"os"
 	"syscall"
 	"unsafe"
 
 	"github.com/avdva/go-ipc/internal/allocator"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 )
 
@@ -28,35 +28,35 @@ type memoryRegion struct {
 func newMemoryRegion(obj Mappable, flag int, offset int64, size int) (*memoryRegion, error) {
 	prot, flags, err := memProtAndFlagsFromMode(flag)
 	if err != nil {
-		return nil, errors.Wrap(err, "memory region flags check failed")
+		return nil, fmt.Errorf("checking memory region flags: %w", err)
 	}
 	if size, err = checkMmapSize(obj, size); err != nil {
-		return nil, errors.Wrap(err, "size check failed")
+		return nil, fmt.Errorf("checking size: %w", err)
 	}
 	calculatedSize, err := fileSizeFromFd(obj)
 	if err != nil {
-		return nil, errors.Wrap(err, "file size check failed")
+		return nil, fmt.Errorf("checking file size: %w", err)
 	}
 	// we need this check on unix, because you can actually mmap more bytes,
 	// then the size of the object, which can cause unexpected problems.
 	if calculatedSize > 0 && int64(size)+offset > calculatedSize {
-		return nil, errors.New("invalid mapping length")
+		return nil, fmt.Errorf("invalid mapping length")
 	}
 	pageOffset := calcMmapOffsetFixup(offset)
 	var data []byte
 	if data, err = unix.Mmap(int(obj.Fd()), offset-pageOffset, size+int(pageOffset), prot, flags); err != nil {
-		return nil, errors.Wrap(err, "mmap failed")
+		return nil, fmt.Errorf("mmap failed: %w", err)
 	}
 	return &memoryRegion{data: data, size: size, pageOffset: pageOffset}, nil
 }
 
 func (region *memoryRegion) Close() error {
-	if region.data != nil {
+	if region.data == nil {
 		err := unix.Munmap(region.data)
-		region.data = nil
-		region.pageOffset = 0
-		region.size = 0
-		return errors.Wrap(err, "munmap failed")
+		*region = memoryRegion{}
+		if err != nil {
+			return fmt.Errorf("munmap failed: %w", err)
+		}
 	}
 	return nil
 }
@@ -71,7 +71,7 @@ func (region *memoryRegion) Flush(async bool) error {
 		flag = unix.MS_ASYNC
 	}
 	if err := msync(region.data, flag); err != nil {
-		return errors.Wrap(err, "mync failed")
+		return fmt.Errorf("mync failed: %w", err)
 	}
 	return nil
 }
@@ -95,7 +95,7 @@ func memProtAndFlagsFromMode(mode int) (prot, flags int, err error) {
 		prot = unix.PROT_READ | unix.PROT_WRITE
 		flags = unix.MAP_PRIVATE
 	default:
-		err = errors.Errorf("invalid memory region flags %d", mode)
+		err = fmt.Errorf("invalid memory region flags %d", mode)
 	}
 	return
 }

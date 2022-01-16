@@ -3,6 +3,7 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"syscall"
@@ -54,10 +55,10 @@ func OpenOrCreate(creator func(bool) error, flag int) (bool, error) {
 		const attempts = 16
 		var err error
 		for attempt := 0; attempt < attempts; attempt++ {
-			if err = creator(false); !os.IsNotExist(err) {
+			if err = creator(false); !errors.Is(err, os.ErrNotExist) {
 				return false, err
 			}
-			if err = creator(true); !os.IsExist(err) {
+			if err = creator(true); !errors.Is(err, os.ErrExist) {
 				return true, err
 			}
 		}

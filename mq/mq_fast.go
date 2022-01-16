@@ -3,6 +3,7 @@
 package mq
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"time"
@@ -12,8 +13,6 @@ import (
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
 	ipc_sync "github.com/avdva/go-ipc/sync"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -33,8 +32,8 @@ var (
 )
 
 var (
-	mqFullError  = newTemporaryError(errors.New("the queue is full"))
-	mqEmptyError = newTemporaryError(errors.New("the queue is empty"))
+	mqFullError  = newTemporaryError(fmt.Errorf("the queue is full"))
+	mqEmptyError = newTemporaryError(fmt.Errorf("the queue is empty"))
 )
 
 // FastMq is a priority message queue based on shared memory.
@@ -52,18 +51,18 @@ type FastMq struct {
 func openFastMq(name string, flag int, perm os.FileMode, maxQueueSize, maxMsgSize int) (*FastMq, error) {
 	var result *FastMq
 	if !checkMqPerm(perm) {
-		return nil, errors.New("invalid mq permissions")
+		return nil, fmt.Errorf("invalid mq permissions")
 	}
 	openFlags := common.FlagsForOpen(flag)
 
 	size, err := calcFastMqSize(maxQueueSize, maxMsgSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "mq size check failed")
+		return nil, fmt.Errorf("checking mq size: %w", err)
 	}
 
 	region, created, err := helper.CreateWritableRegion(fastMqStateName(name), openFlags, perm, size)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create shared state")
+		return nil, fmt.Errorf("creating shared state: %w", err)
 	}
 
 	result = &FastMq{
@@ -79,21 +78,21 @@ func openFastMq(name string, flag int, perm os.FileMode, maxQueueSize, maxMsgSiz
 	// when previous mutex owner crashed, and the mutex is in incosistient state.
 	if created {
 		if err = ipc_sync.DestroyMutex(fastMqLockerName(name)); err != nil {
-			return nil, errors.Wrap(err, "fast mq: failed to access a locker")
+			return nil, fmt.Errorf("fast mq: accessing the locker: %w", err)
 		}
 	}
 	result.locker, err = ipc_sync.NewMutex(fastMqLockerName(name), openFlags, perm)
 	if err != nil {
-		return nil, errors.Wrap(err, "fast mq: failed to create a locker")
+		return nil, fmt.Errorf("fast mq: creating the locker: %w", err)
 	}
 
 	result.condSend, err = ipc_sync.NewCond(fastMqCondName(name, "s"), openFlags, perm, result.locker)
 	if err != nil {
-		return nil, errors.Wrap(err, "fast mq: failed to create a send cond")
+		return nil, fmt.Errorf("fast mq: creating send cond: %w", err)
 	}
 	result.condRecv, err = ipc_sync.NewCond(fastMqCondName(name, "r"), openFlags, perm, result.locker)
 	if err != nil {
-		return nil, errors.Wrap(err, "fast mq: failed to create a recv cond")
+		return nil, fmt.Errorf("fast mq: creating recv cond: %w", err)
 	}
 	result.impl = newFastMq(result.region.Data(), maxQueueSize, maxMsgSize, created)
 	return result, err
@@ -127,16 +126,16 @@ func DestroyFastMq(name string) error {
 	errCondSndDestroy := ipc_sync.DestroyCond(fastMqCondName(name, "s"))
 	errCondRcvDestroy := ipc_sync.DestroyCond(fastMqCondName(name, "r"))
 	if errMutex != nil {
-		return errors.Wrap(errMutex, "failed to destroy ipc locker")
+		return fmt.Errorf("destroying ipc locker: %w", errMutex)
 	}
 	if errObject != nil {
-		return errors.Wrap(errObject, "failed to destroy memory object")
+		return fmt.Errorf("failed to destroying memory object: %w", errObject)
 	}
 	if errCondSndDestroy != nil {
-		return errors.Wrap(errCondSndDestroy, "failed to destroy send condvar")
+		return fmt.Errorf("destroying send condvar: %w", errCondSndDestroy)
 	}
 	if errCondRcvDestroy != nil {
-		return errors.Wrap(errCondRcvDestroy, "failed to destroy receive condvar")
+		return fmt.Errorf("destroying receive condvar: %w", errCondRcvDestroy)
 	}
 	return nil
 }
@@ -145,16 +144,16 @@ func DestroyFastMq(name string) error {
 func FastMqAttrs(name string) (int, int, error) {
 	obj, err := shm.NewMemoryObject(fastMqStateName(name), os.O_RDONLY, 0666)
 	if err != nil {
-		return 0, 0, errors.Wrap(err, "failed to open shm object")
+		return 0, 0, fmt.Errorf("opening shm object: %w", err)
 	}
 	defer obj.Close()
 	minSize := minFastMqSize()
 	if int(obj.Size()) < minSize {
-		return 0, 0, errors.New("shm object is too small")
+		return 0, 0, fmt.Errorf("shm object is too small")
 	}
 	region, err := mmf.NewMemoryRegion(obj, mmf.MEM_READ_ONLY, 0, minSize)
 	if err != nil {
-		return 0, 0, errors.Wrap(err, "failed to create new shm region")
+		return 0, 0, fmt.Errorf("creating new shm region: %w", err)
 	}
 	defer region.Close()
 	impl := newFastMq(region.Data(), 0, 0, false)
@@ -181,7 +180,7 @@ func (mq *FastMq) SendTimeout(data []byte, timeout time.Duration) error {
 // waiting for not longer, then the timeout.
 func (mq *FastMq) SendPriorityTimeout(data []byte, prio int, timeout time.Duration) error {
 	if len(data) > mq.impl.heap.maxMsgSize() {
-		return errors.New("the message is too big")
+		return fmt.Errorf("the message is too big")
 	}
 
 	// optimization: do lock the locker if the queue is full.
@@ -279,16 +278,16 @@ func (mq *FastMq) SetBlocking(block bool) error {
 func (mq *FastMq) Close() error {
 	errLocker := mq.locker.Close()
 	if errRegion := mq.region.Close(); errRegion != nil {
-		return errors.Wrap(errRegion, "failed to close memory region")
+		return fmt.Errorf("closing memory region: %w", errRegion)
 	}
 	if errLocker != nil {
-		return errors.Wrap(errLocker, "failed to close ipc locker")
+		return fmt.Errorf("closing ipc locker: %w", errLocker)
 	}
 	if err := mq.condSend.Close(); err != nil {
-		return errors.Wrap(err, "failed to close send cond")
+		return fmt.Errorf("closing send cond: %w", err)
 	}
 	if err := mq.condRecv.Close(); err != nil {
-		return errors.Wrap(err, "failed to close recv cond")
+		return fmt.Errorf("closing recv cond: %w", err)
 	}
 	return nil
 }
@@ -297,10 +296,10 @@ func (mq *FastMq) Close() error {
 func (mq *FastMq) Destroy() error {
 	e1, e2 := mq.Close(), DestroyFastMq(mq.name)
 	if e1 != nil {
-		return errors.Wrapf(e1, "failed to close mq")
+		return fmt.Errorf("closing mq: %w", e1)
 	}
 	if e2 != nil {
-		return errors.Wrapf(e2, "failed to destroy mq")
+		return fmt.Errorf("destroying mq: %w", e2)
 	}
 	return nil
 }

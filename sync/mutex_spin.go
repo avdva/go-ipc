@@ -3,6 +3,7 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"time"
@@ -11,8 +12,6 @@ import (
 	"github.com/avdva/go-ipc/internal/helper"
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
-
-	"github.com/pkg/errors"
 )
 
 // all implementations must satisfy IPCLocker interface.
@@ -91,13 +90,13 @@ func (spin *SpinMutex) Close() error {
 // Destroy removes the mutex object.
 func (spin *SpinMutex) Destroy() error {
 	if err := spin.Close(); err != nil {
-		return errors.Wrap(err, "failed to close spin mutex")
+		return fmt.Errorf("closing spin mutex: %w", err)
 	}
 	spin.region = nil
 	err := shm.DestroyMemoryObject(spin.name)
 	spin.name = ""
 	if err != nil {
-		return errors.Wrap(err, "failed to destroy shm object")
+		return fmt.Errorf("destroying shm object: %w", err)
 	}
 	return nil
 }

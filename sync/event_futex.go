@@ -5,6 +5,7 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/avdva/go-ipc/internal/helper"
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
-	"github.com/pkg/errors"
 )
 
 type event struct {
@@ -28,7 +28,7 @@ func newEvent(name string, flag int, perm os.FileMode, initial bool) (*event, er
 
 	region, created, err := helper.CreateWritableRegion(eventName(name), flag, perm, lweStateSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create shared state")
+		return nil, fmt.Errorf("creating shared state: %w", err)
 	}
 	state := allocator.ByteSliceData(region.Data())
 	result := &event{
@@ -60,7 +60,7 @@ func (e *event) close() error {
 
 func (e *event) destroy() error {
 	if err := e.close(); err != nil {
-		return errors.Wrap(err, "failed to close shm region")
+		return fmt.Errorf("closing shm region: %w", err)
 	}
 	return destroyEvent(e.name)
 }
@@ -68,7 +68,7 @@ func (e *event) destroy() error {
 func destroyEvent(name string) error {
 	err := shm.DestroyMemoryObject(eventName(name))
 	if err != nil {
-		return errors.Wrap(err, "failed to destroy memory object")
+		return fmt.Errorf("destroying memory object: %w", err)
 	}
 	return nil
 }

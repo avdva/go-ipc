@@ -5,6 +5,7 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/avdva/go-ipc/internal/helper"
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
-	"github.com/pkg/errors"
 )
 
 type event struct {
@@ -29,7 +29,7 @@ func newEvent(name string, flag int, perm os.FileMode, initial bool) (*event, er
 
 	region, created, err := helper.CreateWritableRegion(eventName(name), flag, perm, lweStateSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create shared state")
+		return nil, fmt.Errorf("creating shared state: %w", err)
 	}
 	s, err := NewSemaphore(name, flag, perm, 0)
 	if err != nil {
@@ -37,7 +37,7 @@ func newEvent(name string, flag int, perm os.FileMode, initial bool) (*event, er
 		if created {
 			shm.DestroyMemoryObject(mutexSharedStateName(name, "s"))
 		}
-		return nil, errors.Wrap(err, "failed to create a semaphore")
+		return nil, fmt.Errorf("creating a semaphore: %w", err)
 	}
 	result := &event{
 		lwe:    newLightweightEvent(allocator.ByteSliceData(region.Data()), newSemaWaiter(s)),
@@ -66,17 +66,17 @@ func (e *event) waitTimeout(timeout time.Duration) bool {
 func (e *event) close() error {
 	e1, e2 := e.s.Close(), e.region.Close()
 	if e1 != nil {
-		return errors.Wrap(e1, "failed to close sema")
+		return fmt.Errorf("closing sema: %w", e1)
 	}
 	if e2 != nil {
-		return errors.Wrap(e2, "failed to close shared state")
+		return fmt.Errorf("closing shared state: %w", e2)
 	}
 	return nil
 }
 
 func (e *event) destroy() error {
 	if err := e.close(); err != nil {
-		return errors.Wrap(err, "failed to close the event")
+		return fmt.Errorf("closing the event: %w", err)
 	}
 	return destroyEvent(e.name)
 }
@@ -84,10 +84,10 @@ func (e *event) destroy() error {
 func destroyEvent(name string) error {
 	e1, e2 := shm.DestroyMemoryObject(eventName(name)), destroySemaphore(name)
 	if e1 != nil {
-		return errors.Wrap(e1, "failed to destroy memory object")
+		return fmt.Errorf("destroying memory object: %w", e1)
 	}
 	if e2 != nil {
-		return errors.Wrap(e2, "failed to destroy semaphore")
+		return fmt.Errorf("destroying semaphore: %w", e2)
 	}
 	return nil
 }

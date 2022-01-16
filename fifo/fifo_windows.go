@@ -9,7 +9,6 @@ import (
 
 	"github.com/avdva/go-ipc/internal/common"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/windows"
 )
 
@@ -61,7 +60,7 @@ func (f *NamedPipe) Write(b []byte) (n int, err error) {
 // Close closes the object.
 func (f *NamedPipe) Close() error {
 	if f.pipeHandle == windows.InvalidHandle {
-		return errors.New("already closed")
+		return fmt.Errorf("already closed")
 	}
 	err := windows.CloseHandle(f.pipeHandle)
 	f.pipeHandle = windows.InvalidHandle
@@ -88,7 +87,7 @@ func namedPipePath(name string) string {
 func createFifoClient(path string, flag int) (windows.Handle, error) {
 	namep, err := windows.UTF16PtrFromString(path)
 	if err != nil {
-		return windows.InvalidHandle, errors.Wrap(err, "invalid filename")
+		return windows.InvalidHandle, fmt.Errorf("invalid filename: %w", err)
 	}
 	var fileHandle windows.Handle
 	// unlike unix, we can't wait for a server to create a fifo,
@@ -107,27 +106,27 @@ func createFifoClient(path string, flag int) (windows.Handle, error) {
 			break
 		}
 		if flag&O_NONBLOCK != 0 {
-			return windows.InvalidHandle, errors.Wrap(err, "create file failed")
+			return windows.InvalidHandle, fmt.Errorf("creating file: %w", err)
 		}
 		if os.IsNotExist(err) {
 			time.Sleep(delay)
 			continue
 		}
 		if !common.SyscallErrHasCode(os.NewSyscallError("CreateFile", err), cERROR_PIPE_BUSY) {
-			return windows.InvalidHandle, errors.Wrap(err, "create file failed")
+			return windows.InvalidHandle, fmt.Errorf("creating file: %w", err)
 		}
 		if flag&O_NONBLOCK != 0 {
 			break
 		}
 		if ok, err := waitNamedPipe(path, cNMPWAIT_WAIT_FOREVER); !ok {
-			return windows.InvalidHandle, errors.Wrap(err, "waitNamedPipe failed")
+			return windows.InvalidHandle, fmt.Errorf("waiting pipe: %w", err)
 		}
 	}
 
 	newMode := uint32(cPIPE_READMODE_MESSAGE)
 	if ok, err := setNamedPipeHandleState(fileHandle, &newMode, nil, nil); !ok {
 		windows.CloseHandle(fileHandle)
-		return windows.InvalidHandle, errors.Wrap(err, "setNamedPipeHandleState failed")
+		return windows.InvalidHandle, fmt.Errorf("setNamedPipeHandleState failed: %w", err)
 	}
 	return fileHandle, nil
 }
@@ -136,7 +135,7 @@ func createFifoServer(path string, flag int) (windows.Handle, error) {
 	var pipeHandle = windows.InvalidHandle
 	namep, err := windows.UTF16PtrFromString(path)
 	if err != nil {
-		return windows.InvalidHandle, errors.Wrap(err, "invalid filename")
+		return windows.InvalidHandle, fmt.Errorf("invalid filename: %w", err)
 	}
 	creator := func(create bool) error {
 		var err error
@@ -157,7 +156,7 @@ func createFifoServer(path string, flag int) (windows.Handle, error) {
 	for {
 		_, err := common.OpenOrCreate(creator, flag)
 		if pipeHandle == windows.InvalidHandle {
-			return windows.InvalidHandle, errors.Wrap(err, "open/create file failed")
+			return windows.InvalidHandle, fmt.Errorf("open/create file failed: %w", err)
 		}
 		connected := true
 		if flag&O_NONBLOCK == 0 {

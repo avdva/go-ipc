@@ -5,12 +5,12 @@
 package mq
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"unsafe"
 
 	"github.com/avdva/go-ipc/internal/common"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -47,7 +47,7 @@ func CreateSystemVMessageQueue(name string, flag int, perm os.FileMode) (*System
 	}
 	k, err := common.KeyForName(name)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate a key")
+		return nil, fmt.Errorf("generating a key: %w", err)
 	}
 	sysFlags := int(perm) | common.IpcCreate
 	if flag&os.O_EXCL != 0 {
@@ -55,7 +55,7 @@ func CreateSystemVMessageQueue(name string, flag int, perm os.FileMode) (*System
 	}
 	id, err := msgget(k, sysFlags)
 	if err != nil {
-		return nil, errors.Wrap(err, "msgget failed")
+		return nil, fmt.Errorf("msgget: %w", err)
 	}
 	return &SystemVMessageQueue{id: id, name: name, flags: flag}, nil
 }
@@ -66,11 +66,11 @@ func CreateSystemVMessageQueue(name string, flag int, perm os.FileMode) (*System
 func OpenSystemVMessageQueue(name string, flags int) (*SystemVMessageQueue, error) {
 	k, err := common.KeyForName(name)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate a key")
+		return nil, fmt.Errorf("generating a key: %w", err)
 	}
 	id, err := msgget(k, 0)
 	if err != nil {
-		return nil, errors.Wrap(err, "msgget failed")
+		return nil, fmt.Errorf("msgget: %w", err)
 	}
 	result := &SystemVMessageQueue{id: id, name: name, flags: flags}
 	return result, nil
@@ -104,19 +104,19 @@ func (mq *SystemVMessageQueue) Receive(data []byte) (int, error) {
 // Destroy closes the queue and removes it permanently.
 func (mq *SystemVMessageQueue) Destroy() error {
 	if err := mq.Close(); err != nil {
-		return errors.Wrap(err, "mq close failed")
+		return fmt.Errorf("closing mq: %w", err)
 	}
 	err := msgctl(mq.id, common.IpcRmid, nil)
 	if err == nil {
 		if err = os.Remove(common.TmpFilename(mq.name)); os.IsNotExist(err) {
 			err = nil
-		} else {
-			err = errors.Wrap(err, "failed to remove temporary file")
+		} else if err != nil {
+			err = fmt.Errorf("removing temporary file: %w", err)
 		}
 	} else if os.IsNotExist(err) {
 		err = nil
 	} else {
-		err = errors.Wrap(err, "msgctl failed")
+		err = fmt.Errorf("msgctl: %w", err)
 	}
 	return err
 }
@@ -142,15 +142,15 @@ func (mq *SystemVMessageQueue) SetBlocking(block bool) error {
 func DestroySystemVMessageQueue(name string) error {
 	mq, err := OpenSystemVMessageQueue(name, 0)
 	if err != nil {
-		if os.IsNotExist(errors.Cause(err)) {
+		if errors.Is(err, os.ErrNotExist) {
 			err = nil
 		} else {
-			err = errors.Wrap(err, "open mq")
+			err = fmt.Errorf("openning mq: %w", err)
 		}
 		return err
 	}
 	if err = mq.Destroy(); err != nil {
-		err = errors.Wrap(err, "destroy faield")
+		err = fmt.Errorf("destroying mq: %w", err)
 	}
 	return err
 }

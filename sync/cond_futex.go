@@ -5,6 +5,7 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/avdva/go-ipc/internal/helper"
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
-	"github.com/pkg/errors"
 )
 
 // cond is a futex-based convar.
@@ -31,7 +31,7 @@ func newCond(name string, flag int, perm os.FileMode, l IPCLocker) (*cond, error
 
 	region, _, err := helper.CreateWritableRegion(condSharedStateName(name), flag, perm, lwmStateSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create shared state")
+		return nil, fmt.Errorf("creating shared state: %w", err)
 	}
 
 	result := &cond{
@@ -84,7 +84,7 @@ func (c *cond) waitTimeout(timeout time.Duration) bool {
 
 func (c *cond) close() error {
 	if err := c.region.Close(); err != nil {
-		return errors.Wrap(err, "failed to close waiters list memory region")
+		return fmt.Errorf("closing waiters list memory region: %w", err)
 	}
 	return nil
 }
@@ -92,10 +92,10 @@ func (c *cond) close() error {
 func (c *cond) destroy() error {
 	var result error
 	if err := c.close(); err != nil {
-		result = errors.Wrap(err, "destroy failed")
+		result = fmt.Errorf("closing: %w", err)
 	}
 	if err := shm.DestroyMemoryObject(condSharedStateName(c.name)); err != nil {
-		result = errors.Wrap(err, "failed to close waiters list memory object")
+		result = fmt.Errorf("closing waiters list memory object: %w", err)
 	}
 	return result
 }

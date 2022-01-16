@@ -3,12 +3,12 @@
 package shm
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 
 	"github.com/avdva/go-ipc/internal/common"
 	"github.com/avdva/go-ipc/mmf"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -61,7 +61,7 @@ func NewMemoryObjectSize(name string, flag int, perm os.FileMode, size int64) (S
 			creatorFlag |= (os.O_CREATE | os.O_EXCL)
 		}
 		obj, err = NewMemoryObject(name, creatorFlag, perm)
-		return errors.Cause(err)
+		return err
 	}
 	created, resultErr := common.OpenOrCreate(creator, flag)
 	if resultErr != nil {
@@ -72,7 +72,7 @@ func NewMemoryObjectSize(name string, flag int, perm os.FileMode, size int64) (S
 			return nil, false, resultErr
 		}
 	} else if obj.Size() < size {
-		return nil, false, errors.Errorf("existing object is smaller (%d), than needed(%d)", obj.Size(), size)
+		return nil, false, fmt.Errorf("existing object is smaller (%d), than needed(%d)", obj.Size(), size)
 	}
 	return obj, created, nil
 }

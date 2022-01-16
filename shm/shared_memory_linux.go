@@ -6,13 +6,13 @@ package shm
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 )
 
@@ -55,12 +55,12 @@ func shmName(name string) (string, error) {
 	name = strings.TrimLeft(name, "/")
 	nameLen := len(name)
 	if nameLen == 0 || nameLen >= maxNameLen || strings.Contains(name, "/") {
-		return "", errors.New("invalid shm name")
+		return "", fmt.Errorf("invalid shm name")
 	}
 	var dir string
 	var err error
 	if dir, err = shmDirectory(); err != nil {
-		return "", errors.Wrap(err, "error building shared memory name")
+		return "", fmt.Errorf("building shared memory name: %w", err)
 	}
 	return dir + name, nil
 }
@@ -68,7 +68,7 @@ func shmName(name string) (string, error) {
 func shmDirectory() (string, error) {
 	shmPathOnce.Do(locateShmFs)
 	if len(shmPath) == 0 {
-		return shmPath, errors.New("error locating the shared memory path")
+		return shmPath, fmt.Errorf("failed to locate shared memory path")
 	}
 	return shmPath, nil
 }

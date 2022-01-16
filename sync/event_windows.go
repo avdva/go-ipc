@@ -3,10 +3,10 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/windows"
 )
 
@@ -30,7 +30,7 @@ func NewWindowsEvent(name string, flag int, perm os.FileMode, initial bool) (*Wi
 	}
 	handle, err := openOrCreateEvent(name, flag, init)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open/create event")
+		return nil, fmt.Errorf("opening event: %w", err)
 	}
 	return &WindowsEvent{handle: handle}, nil
 }
@@ -63,7 +63,7 @@ func (e *WindowsEvent) WaitTimeout(timeout time.Duration) bool {
 		if err != nil {
 			panic(err)
 		} else {
-			panic(errors.Errorf("invalid wait state for an event: %d", ev))
+			panic(fmt.Errorf("invalid wait state for an event: %d", ev))
 		}
 	}
 }

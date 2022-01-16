@@ -3,11 +3,11 @@
 package helper
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
-	"github.com/pkg/errors"
 )
 
 // CreateWritableRegion is a helper, which:
@@ -17,7 +17,7 @@ import (
 func CreateWritableRegion(name string, flag int, perm os.FileMode, size int) (*mmf.MemoryRegion, bool, error) {
 	obj, created, resultErr := shm.NewMemoryObjectSize(name, flag, perm, int64(size))
 	if resultErr != nil {
-		return nil, false, errors.Wrap(resultErr, "failed to create shm object")
+		return nil, false, fmt.Errorf("creating shm object: %w", resultErr)
 	}
 	var region *mmf.MemoryRegion
 	defer func() {
@@ -33,7 +33,7 @@ func CreateWritableRegion(name string, flag int, perm os.FileMode, size int) (*m
 		}
 	}()
 	if region, resultErr = mmf.NewMemoryRegion(obj, mmf.MEM_READWRITE, 0, size); resultErr != nil {
-		return nil, false, errors.Wrap(resultErr, "failed to create shm region")
+		return nil, false, fmt.Errorf("creating shm region: %w", resultErr)
 	}
 	return region, created, nil
 }

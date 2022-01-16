@@ -3,6 +3,8 @@
 package sync
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -10,8 +12,6 @@ import (
 	"github.com/avdva/go-ipc/internal/helper"
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
-
-	"github.com/pkg/errors"
 )
 
 // all implementations must satisfy IPCLocker interface.
@@ -37,7 +37,7 @@ func NewSemaMutex(name string, flag int, perm os.FileMode) (*SemaMutex, error) {
 	}
 	region, created, err := helper.CreateWritableRegion(mutexSharedStateName(name, "s"), flag, perm, lwmStateSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create shared state")
+		return nil, fmt.Errorf("creating shared state: %w", err)
 	}
 	s, err := NewSemaphore(name, flag, perm, 1)
 	if err != nil {
@@ -45,7 +45,7 @@ func NewSemaMutex(name string, flag int, perm os.FileMode) (*SemaMutex, error) {
 		if created {
 			shm.DestroyMemoryObject(mutexSharedStateName(name, "s"))
 		}
-		return nil, errors.Wrap(err, "failed to create a semaphore")
+		return nil, fmt.Errorf("creating a semaphore: %w", err)
 	}
 	result := &SemaMutex{
 		s:      s,
@@ -83,10 +83,10 @@ func (m *SemaMutex) Unlock() {
 func (m *SemaMutex) Close() error {
 	e1, e2 := m.s.Close(), m.region.Close()
 	if e1 != nil {
-		return errors.Wrap(e1, "failed to close semaphore")
+		return fmt.Errorf("closing semaphore: %w", e1)
 	}
 	if e2 != nil {
-		return errors.Wrap(e2, "failed to close shared state")
+		return fmt.Errorf("closing shared state: %w", e2)
 	}
 	return nil
 }
@@ -94,7 +94,7 @@ func (m *SemaMutex) Close() error {
 // Destroy closes the mutex and removes it permanently.
 func (m *SemaMutex) Destroy() error {
 	if err := m.Close(); err != nil {
-		return errors.Wrap(err, "failed to close shared state")
+		return fmt.Errorf("closing shared state: %w", err)
 	}
 	return DestroySemaMutex(m.name)
 }
@@ -102,9 +102,9 @@ func (m *SemaMutex) Destroy() error {
 // DestroySemaMutex permanently removes mutex with the given name.
 func DestroySemaMutex(name string) error {
 	if err := shm.DestroyMemoryObject(mutexSharedStateName(name, "s")); err != nil {
-		return errors.Wrap(err, "failed to destroy shared state")
+		return fmt.Errorf("destroying shared state: %w", err)
 	}
-	if err := DestroySemaphore(name); err != nil && !os.IsNotExist(errors.Cause(err)) {
+	if err := DestroySemaphore(name); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	return nil

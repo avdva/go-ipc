@@ -3,6 +3,7 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -12,14 +13,14 @@ import (
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/windows"
 )
 
 // all implementations must satisfy IPCLocker interface.
 var (
-	_          IPCLocker = (*EventMutex)(nil)
-	timeoutErr           = common.NewTimeoutError("WaitForSingleObject")
+	_ IPCLocker = (*EventMutex)(nil)
+
+	timeoutErr = common.NewTimeoutError("WaitForSingleObject")
 )
 
 // EventMutex is a mutex built on named windows events.
@@ -43,7 +44,7 @@ func NewEventMutex(name string, flag int, perm os.FileMode) (*EventMutex, error)
 	}
 	region, created, err := helper.CreateWritableRegion(mutexSharedStateName(name, "e"), flag, perm, lwmStateSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create shared state")
+		return nil, fmt.Errorf("creating shared state: %w", err)
 	}
 	handle, err := openOrCreateEvent(name, flag, 1)
 	if err != nil {
@@ -51,7 +52,7 @@ func NewEventMutex(name string, flag int, perm os.FileMode) (*EventMutex, error)
 		if created {
 			shm.DestroyMemoryObject(mutexSharedStateName(name, "e"))
 		}
-		return nil, errors.Wrap(err, "failed to open/create event mutex")
+		return nil, fmt.Errorf("opening event mutex: %w", err)
 	}
 	result := &EventMutex{
 		handle: handle,
@@ -123,7 +124,7 @@ func (e *eventWaiter) wait(unused int32, timeout time.Duration) error {
 		if err != nil {
 			panic(err)
 		} else {
-			panic(errors.Errorf("invalid wait state for a mutex: %d", ev))
+			panic(fmt.Errorf("invalid wait state for a mutex: %d", ev))
 		}
 	}
 }

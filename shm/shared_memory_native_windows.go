@@ -3,12 +3,12 @@
 package shm
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/avdva/go-ipc/internal/common"
-	"github.com/avdva/go-ipc/internal/sys/windows"
+	sys "github.com/avdva/go-ipc/internal/sys/windows"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/windows"
 )
 
@@ -42,7 +42,7 @@ type WindowsNativeMemoryObject struct {
 func NewWindowsNativeMemoryObject(name string, flag, size int) (*WindowsNativeMemoryObject, error) {
 	prot, sysFlags, err := sysProtAndFlagsFromFlag(flag)
 	if err != nil {
-		return nil, errors.Wrap(err, "windows native shm flags check failed")
+		return nil, fmt.Errorf("checking flags: %w", err)
 	}
 	maxSizeHigh := uint32((int64(size)) >> 32)
 	maxSizeLow := uint32((int64(size)) & 0xFFFFFFFF)
@@ -67,7 +67,7 @@ func NewWindowsNativeMemoryObject(name string, flag, size int) (*WindowsNativeMe
 	}
 
 	if _, err = common.OpenOrCreate(creator, flag); err != nil {
-		return nil, errors.Wrap(err, "create mapping file failed")
+		return nil, fmt.Errorf("creating mapping file: %w", err)
 	}
 
 	return &WindowsNativeMemoryObject{name: name, handle: handle, size: size}, nil
@@ -91,19 +91,19 @@ func (obj *WindowsNativeMemoryObject) Size() int64 {
 // Close closes mapping file object.
 func (obj *WindowsNativeMemoryObject) Close() error {
 	if err := windows.CloseHandle(obj.handle); err != nil {
-		return errors.Wrap(err, "close handle failed")
+		return fmt.Errorf("closing handle: %w", err)
 	}
 	return nil
 }
 
 // Truncate returns an error. You can specify the size when calling NewWindowsNativeMemoryObject.
 func (obj *WindowsNativeMemoryObject) Truncate(size int64) error {
-	return errors.New("truncate cannot be done on windows shared memory")
+	return fmt.Errorf("truncate cannot be done on windows shared memory")
 }
 
 // Destroy returns an error. It is not supported for windows shared memory.
 func (obj *WindowsNativeMemoryObject) Destroy() error {
-	return errors.New("destroy cannot be done on windows shared memory")
+	return fmt.Errorf("destroy cannot be done on windows shared memory")
 }
 
 // IsNative returns true, indicating, that this object can be mapped without extra call to CreateFileMapping.
@@ -124,7 +124,7 @@ func sysProtAndFlagsFromFlag(flag int) (prot uint32, flags uint32, err error) {
 		prot = windows.PAGE_WRITECOPY
 		flags = windows.FILE_MAP_COPY
 	default:
-		err = errors.Errorf("invalid mem region flags %d", flag)
+		err = fmt.Errorf("invalid mem region flags %d", flag)
 	}
 	return
 }

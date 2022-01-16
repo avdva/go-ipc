@@ -5,12 +5,11 @@
 package shm
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -24,11 +23,11 @@ type memoryObject struct {
 func newMemoryObject(name string, flag int, perm os.FileMode) (*memoryObject, error) {
 	path, err := shmName(name)
 	if err != nil {
-		return nil, errors.Wrap(err, "shm name failed")
+		return nil, err
 	}
 	file, err := shmOpen(path, flag, perm)
 	if err != nil {
-		return nil, errors.Wrap(err, "shm open failed")
+		return nil, fmt.Errorf("shm open: %w", err)
 	}
 	return &memoryObject{file: file}, nil
 }
@@ -36,11 +35,11 @@ func newMemoryObject(name string, flag int, perm os.FileMode) (*memoryObject, er
 func (obj *memoryObject) Destroy() error {
 	if int(obj.Fd()) >= 0 {
 		if err := obj.Close(); err != nil {
-			return errors.Wrap(err, "close failed")
+			return fmt.Errorf("closing memory object: %w", err)
 		}
 	}
 	if err := doDestroyMemoryObject(obj.file.Name()); err != nil {
-		return errors.Wrap(err, "unable to destroy memory object")
+		return fmt.Errorf("destroying memory object: %w", err)
 	}
 	return nil
 }
@@ -90,10 +89,10 @@ func (obj *memoryObject) Fd() uintptr {
 func destroyMemoryObject(name string) error {
 	path, err := shmName(name)
 	if err != nil {
-		return errors.Wrap(err, "shm name failed")
+		return fmt.Errorf("shm name: %w", err)
 	}
 	if err = doDestroyMemoryObject(path); err != nil {
-		err = errors.Wrapf(err, "failed to destroy shm object %q", path)
+		err = fmt.Errorf("failed to destroy shm object %q: %w", path, err)
 	}
 	return err
 }

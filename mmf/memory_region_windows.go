@@ -3,14 +3,14 @@
 package mmf
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"unsafe"
 
 	"github.com/avdva/go-ipc/internal/allocator"
-	"github.com/avdva/go-ipc/internal/sys/windows"
+	sys "github.com/avdva/go-ipc/internal/sys/windows"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/windows"
 )
 
@@ -36,10 +36,10 @@ type native interface {
 func newMemoryRegion(obj Mappable, mode int, offset int64, size int) (*memoryRegion, error) {
 	prot, flags, err := sysProtAndFlagsFromFlag(mode)
 	if err != nil {
-		return nil, errors.Wrap(err, "memory region flags check failed")
+		return nil, fmt.Errorf("checking memory region flags: %w", err)
 	}
 	if size, err = checkMmapSize(obj, size); err != nil {
-		return nil, errors.Wrap(err, "size check failed")
+		return nil, fmt.Errorf("size check failed: %w", err)
 	}
 	maxSizeHigh := uint32((offset + int64(size)) >> 32)
 	maxSizeLow := uint32((offset + int64(size)) & 0xFFFFFFFF)
@@ -57,7 +57,7 @@ func newMemoryRegion(obj Mappable, mode int, offset int64, size int) (*memoryReg
 			maxSizeLow,
 			"")
 		if err != nil {
-			return nil, errors.Wrap(err, "create mapping file failed")
+			return nil, fmt.Errorf("creating mapping file: %w", err)
 		}
 		defer windows.CloseHandle(handle)
 	}
@@ -69,7 +69,7 @@ func newMemoryRegion(obj Mappable, mode int, offset int64, size int) (*memoryReg
 
 	addr, err := windows.MapViewOfFile(handle, flags, highOffset, lowOffset, uintptr(int64(size)+pageOffset))
 	if err != nil {
-		return nil, errors.Wrap(os.NewSyscallError("MapViewOfFile", err), "failed to mmap file view")
+		return nil, fmt.Errorf("mmaping file view: %w", os.NewSyscallError("MapViewOfFile", err))
 	}
 
 	totalSize := size + int(pageOffset)
@@ -84,7 +84,7 @@ func (region *memoryRegion) Close() error {
 	runtime.SetFinalizer(region, nil)
 	err := windows.UnmapViewOfFile(uintptr(allocator.ByteSliceData(region.data)))
 	if err != nil {
-		return errors.Wrap(err, "UnmapViewOfFile failed")
+		return fmt.Errorf("UnmapViewOfFile: %w", err)
 	}
 	region.data = nil
 	return nil
@@ -101,7 +101,7 @@ func (region *memoryRegion) Size() int {
 func (region *memoryRegion) Flush(async bool) error {
 	err := windows.FlushViewOfFile(uintptr(allocator.ByteSliceData(region.data)), uintptr(len(region.data)))
 	if err != nil {
-		return errors.Wrap(err, "FlushViewOfFile failed")
+		return fmt.Errorf("FlushViewOfFile: %w", err)
 	}
 	return nil
 }
@@ -120,7 +120,7 @@ func sysProtAndFlagsFromFlag(mode int) (prot uint32, flags uint32, err error) {
 		prot = windows.PAGE_WRITECOPY
 		flags = windows.FILE_MAP_COPY
 	default:
-		err = errors.Errorf("invalid mem region flags %d", mode)
+		err = fmt.Errorf("invalid mem region flags %d", mode)
 	}
 	return
 }

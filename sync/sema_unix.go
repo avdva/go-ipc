@@ -5,11 +5,12 @@
 package sync
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"time"
 
 	"github.com/avdva/go-ipc/internal/common"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -33,7 +34,7 @@ type semaphore struct {
 func newSemaphore(name string, flag int, perm os.FileMode, initial int) (*semaphore, error) {
 	k, err := common.KeyForName(name)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate a key for the name")
+		return nil, fmt.Errorf("failed to generate a key for the name: %w", err)
 	}
 	result, err := newSemaphoreKey(uint64(k), flag, perm, initial)
 	if err != nil {
@@ -57,13 +58,13 @@ func newSemaphoreKey(key uint64, flag int, perm os.FileMode, initial int) (*sema
 	}
 	created, err := common.OpenOrCreate(creator, flag)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open/create sysv semaphore")
+		return nil, fmt.Errorf("opening sysv semaphore: %w", err)
 	}
 	result := &semaphore{id: id}
 	if created && initial > 0 {
 		if err = result.add(initial); err != nil {
 			result.Destroy()
-			return nil, errors.Wrap(err, "failed to add initial semaphore value")
+			return nil, fmt.Errorf("adding initial semaphore value: %w", err)
 		}
 	}
 	return result, nil
@@ -105,14 +106,14 @@ func (s *semaphore) add(value int) error {
 func destroySemaphore(name string) error {
 	k, err := common.KeyForName(name)
 	if err != nil {
-		return errors.Wrap(err, "failed to get a key for the name")
+		return fmt.Errorf("getting a key for the name: %w", err)
 	}
 	id, err := semget(k, 1, 0)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			return nil
 		}
-		return errors.Wrap(err, "failed to get semaphore id")
+		return fmt.Errorf("getting semaphore id: %w", err)
 	}
 	return removeSysVSemaByID(id, name)
 }
@@ -123,12 +124,12 @@ func removeSysVSemaByID(id int, name string) error {
 		if err = os.Remove(common.TmpFilename(name)); os.IsNotExist(err) {
 			err = nil
 		} else if err != nil {
-			err = errors.Wrap(err, "failed to remove temporary file")
+			err = fmt.Errorf("removing temporary file: %w", err)
 		}
 	} else if os.IsNotExist(err) {
 		err = nil
 	} else {
-		err = errors.Wrap(err, "semctl failed")
+		err = fmt.Errorf("semctl: %w", err)
 	}
 	return err
 }

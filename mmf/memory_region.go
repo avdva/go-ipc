@@ -3,12 +3,12 @@
 package mmf
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"unsafe"
 
 	"github.com/avdva/go-ipc/internal/allocator"
-	"github.com/pkg/errors"
 )
 
 // Constants for memory regions.
@@ -136,7 +136,7 @@ func fileSizeFromFd(f Mappable) (int64, error) {
 func checkMmapSize(f Mappable, size int) (int, error) {
 	if size == 0 {
 		if f.Fd() == ^uintptr(0) {
-			return 0, errors.New("must provide a valid file size")
+			return 0, fmt.Errorf("must provide a valid file size")
 		}
 		if sz, err := fileSizeFromFd(f); err == nil {
 			size = int(sz)

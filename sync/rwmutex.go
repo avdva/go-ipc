@@ -3,14 +3,13 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/avdva/go-ipc/internal/allocator"
 	"github.com/avdva/go-ipc/internal/helper"
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
-
-	"github.com/pkg/errors"
 )
 
 // all implementations must satisfy at least IPCLocker interface.
@@ -36,7 +35,7 @@ func NewRWMutex(name string, flag int, perm os.FileMode) (*RWMutex, error) {
 	}
 	region, created, err := helper.CreateWritableRegion(mutexSharedStateName(name, "rw"), flag, perm, lwRWMStateSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create shared state")
+		return nil, fmt.Errorf("creating shared state: %w", err)
 	}
 	result := &RWMutex{region: region, name: name}
 	if result.wR, result.wW, err = makeRWMWaiters(name, flag, perm); err != nil {
@@ -89,7 +88,7 @@ func (rw *RWMutex) Close() error {
 // Destroy closes the mutex and removes it permanently.
 func (rw *RWMutex) Destroy() error {
 	if err := rw.Close(); err != nil {
-		return errors.Wrap(err, "failed to close shared state")
+		return fmt.Errorf("closing shared state: %w", err)
 	}
 	return DestroyRWMutex(rw.name)
 }
@@ -99,7 +98,7 @@ func DestroyRWMutex(name string) error {
 	e1 := shm.DestroyMemoryObject(mutexSharedStateName(name, "rw"))
 	e2 := destroyRWWaiters(name)
 	if e1 != nil {
-		return errors.Wrap(e1, "failed to destroy shared state")
+		return fmt.Errorf("destroying shared state: %w", e1)
 	}
 	if e2 != nil {
 		return e2
@@ -122,13 +121,13 @@ func (r *rlocker) Close() error { return (*RWMutex)(r).Close() }
 func makeRWMWaiters(name string, flag int, perm os.FileMode) (waitWaker, waitWaker, error) {
 	rSema, err := NewSemaphore(name+".rs", flag, perm, 0)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to create r/sema")
+		return nil, nil, fmt.Errorf("creating r/sema: %w", err)
 	}
 	wSema, err := NewSemaphore(name+".ws", flag, perm, 0)
 	if err != nil {
 		rSema.Close()
 		DestroySemaphore(name + ".rs")
-		return nil, nil, errors.Wrap(err, "failed to create w/sema")
+		return nil, nil, fmt.Errorf("creating w/sema: %w", err)
 	}
 	return newSemaWaiter(rSema), newSemaWaiter(wSema), nil
 }
@@ -137,10 +136,10 @@ func closeRWWaiters(wR, wW waitWaker) error {
 	sR, sW := wR.(*semaWaiter).s, wW.(*semaWaiter).s
 	e1, e2 := sR.Close(), sW.Close()
 	if e1 != nil {
-		return errors.Wrap(e1, "failed to close r/sema")
+		return fmt.Errorf("closing r/sema: %w", e1)
 	}
 	if e2 != nil {
-		return errors.Wrap(e2, "failed to close w/sema")
+		return fmt.Errorf("closing w/sema: %w", e2)
 	}
 	return nil
 }
@@ -148,10 +147,10 @@ func closeRWWaiters(wR, wW waitWaker) error {
 func destroyRWWaiters(name string) error {
 	e1, e2 := DestroySemaphore(name+".rs"), DestroySemaphore(name+".ws")
 	if e1 != nil {
-		return errors.Wrap(e1, "failed to deatroy r/sema")
+		return fmt.Errorf("destroying r/sema: %w", e1)
 	}
 	if e2 != nil {
-		return errors.Wrap(e2, "failed to deatroy w/sema")
+		return fmt.Errorf("destroying w/sema: %w", e2)
 	}
 	return nil
 }

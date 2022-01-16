@@ -3,7 +3,6 @@ module github.com/avdva/go-ipc
 go 1.17
 
 require (
-	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 )

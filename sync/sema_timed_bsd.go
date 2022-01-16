@@ -5,6 +5,7 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"runtime"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/avdva/go-ipc/internal/common"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 )
 
@@ -36,7 +36,7 @@ func (ti *threadInterrupter) start(timeout time.Duration) error {
 	// first, get thread id. goroutine must be locked on the thread.
 	tid, err := gettid()
 	if err != nil {
-		return errors.Wrap(err, "failed to get thread id")
+		return fmt.Errorf("getting thread id: %w", err)
 	}
 	// then, restore SIGUSR2 handler if it was ignored before.
 	// we don't know, if it was really igored, so we do it unconditionally.
@@ -62,7 +62,7 @@ func doSemaTimedWait(id int, timeout time.Duration) bool {
 	ti := threadInterrupter{}
 	b := sembuf{semnum: 0, semop: int16(-1), semflg: 0}
 	if err := ti.start(timeout); err != nil {
-		panic(errors.Wrap(err, "failed to setup timeout"))
+		panic(fmt.Errorf("setting up timeout: %w", err))
 	}
 	err := semop(id, []sembuf{b})
 	ti.done()

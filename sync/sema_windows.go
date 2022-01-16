@@ -3,10 +3,9 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"time"
-
-	"github.com/pkg/errors"
 
 	"golang.org/x/sys/windows"
 )
@@ -23,14 +22,14 @@ func newSemaphore(name string, flag int, perm os.FileMode, initial int) (*semaph
 	}
 	handle, err := openOrCreateSemaphore(name, flag, initial, CSemMaxVal)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open/create semaphore")
+		return nil, fmt.Errorf("opening semaphore: %w", err)
 	}
 	return &semaphore{handle: handle}, nil
 }
 
 func (s *semaphore) close() error {
 	if err := windows.CloseHandle(s.handle); err != nil {
-		return errors.Wrap(err, "failed to close windows handle")
+		return fmt.Errorf("closing windows handle: %w", err)
 	}
 	return nil
 }
@@ -60,7 +59,7 @@ func (s *semaphore) waitTimeout(timeout time.Duration) bool {
 		if err != nil {
 			panic(err)
 		} else {
-			panic(errors.Errorf("invalid wait state for an event: %d", ev))
+			panic(fmt.Errorf("invalid wait state for an event: %d", ev))
 		}
 	}
 }

@@ -5,6 +5,7 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -12,8 +13,6 @@ import (
 	"github.com/avdva/go-ipc/internal/helper"
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
-
-	"github.com/pkg/errors"
 )
 
 // all implementations must satisfy at least IPCLocker interface.
@@ -40,7 +39,7 @@ func NewFutexMutex(name string, flag int, perm os.FileMode) (*FutexMutex, error)
 	}
 	region, created, err := helper.CreateWritableRegion(mutexSharedStateName(name, "f"), flag, perm, lwmStateSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create shared state")
+		return nil, fmt.Errorf("creating shared state: %w", err)
 	}
 
 	data := allocator.ByteSliceData(region.Data())
@@ -84,7 +83,7 @@ func (f *FutexMutex) Close() error {
 // Destroy removes the mutex object.
 func (f *FutexMutex) Destroy() error {
 	if err := f.Close(); err != nil {
-		return errors.Wrap(err, "failed to close shm region")
+		return fmt.Errorf("closing shm region: %w", err)
 	}
 	return DestroyFutexMutex(f.name)
 }
@@ -92,7 +91,7 @@ func (f *FutexMutex) Destroy() error {
 // DestroyFutexMutex permanently removes mutex with the given name.
 func DestroyFutexMutex(name string) error {
 	if err := shm.DestroyMemoryObject(mutexSharedStateName(name, "f")); err != nil {
-		return errors.Wrap(err, "failed to destroy memory object")
+		return fmt.Errorf("destroying memory object: %w", err)
 	}
 	return nil
 }

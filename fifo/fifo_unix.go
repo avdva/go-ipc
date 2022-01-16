@@ -5,11 +5,12 @@
 package fifo
 
 import (
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/avdva/go-ipc/internal/common"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 )
 
@@ -26,7 +27,7 @@ func NewUnixFifo(name string, flag int, perm os.FileMode) (*UnixFifo, error) {
 	if flag&os.O_RDWR != 0 {
 		// open man says "The result is undefined if this flag is applied to a FIFO."
 		// so, we don't allow it and return an error
-		return nil, errors.Errorf("O_RDWR flag cannot be used for FIFO")
+		return nil, fmt.Errorf("O_RDWR flag cannot be used for FIFO")
 	}
 	path := fifoPath(name)
 	var file *os.File
@@ -41,7 +42,7 @@ func NewUnixFifo(name string, flag int, perm os.FileMode) (*UnixFifo, error) {
 		return err
 	}
 	if _, err := common.OpenOrCreate(creator, flag); err != nil {
-		return nil, errors.Wrap(err, "open/create fifo failed")
+		return nil, fmt.Errorf("open/create fifo failed: %w", err)
 	}
 	return &UnixFifo{file: file}, nil
 }
@@ -66,11 +67,11 @@ func (f *UnixFifo) Destroy() error {
 	var err error
 	err = f.file.Close()
 	if err != nil {
-		return errors.Wrap(err, "close failed")
+		return fmt.Errorf("closing file: %w", err)
 	}
 	if err = os.Remove(f.file.Name()); err != nil {
 		if !os.IsNotExist(err) {
-			return errors.Wrap(err, "remove failed")
+			return fmt.Errorf("removing file: %w", err)
 		}
 	}
 	return nil
@@ -79,10 +80,10 @@ func (f *UnixFifo) Destroy() error {
 // DestroyUnixFIFO permanently removes the FIFO.
 func DestroyUnixFIFO(name string) error {
 	err := os.Remove(fifoPath(name))
-	if os.IsNotExist(err) {
+	if err == nil || errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
-	return errors.Wrap(err, "remove failed")
+	return fmt.Errorf("removing fifo: %w", err)
 }
 
 func fifoPath(name string) string {

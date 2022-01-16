@@ -3,13 +3,12 @@
 package sync
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"sync/atomic"
 	"time"
 	"unsafe"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -39,8 +38,8 @@ func newWaiter(ptr unsafe.Pointer) *waiter {
 			*result.id = id
 			return result
 		}
-		if !os.IsExist(errors.Cause(err)) {
-			panic(errors.Wrap(err, "cond: failed to create an event"))
+		if !errors.Is(err, os.ErrNotExist) {
+			panic(fmt.Errorf("cond: failed to create an event: %w", err))
 		}
 	}
 }
@@ -52,7 +51,7 @@ func openWaiter(ptr unsafe.Pointer) *waiter {
 func (w *waiter) signal() bool {
 	ev, err := NewEvent(condWaiterEventName(*w.id), 0, 0, false)
 	if err != nil {
-		if os.IsNotExist(errors.Cause(err)) {
+		if errors.Is(err, os.ErrNotExist) {
 			return false
 		}
 		panic(err)

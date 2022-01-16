@@ -3,11 +3,10 @@
 package shm
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
-
-	"github.com/pkg/errors"
 )
 
 // Shared memory on Windows is emulated via regular files
@@ -19,11 +18,11 @@ type memoryObject struct {
 func newMemoryObject(name string, flag int, perm os.FileMode) (impl *memoryObject, err error) {
 	path, err := shmName(name)
 	if err != nil {
-		return nil, errors.Wrap(err, "shm name failed")
+		return nil, fmt.Errorf("shm name: %w", err)
 	}
 	file, err := os.OpenFile(path, flag, perm)
 	if err != nil {
-		return nil, errors.Wrap(err, "open file failed")
+		return nil, fmt.Errorf("opening file: %w", err)
 	}
 	return &memoryObject{file}, nil
 }
@@ -31,7 +30,7 @@ func newMemoryObject(name string, flag int, perm os.FileMode) (impl *memoryObjec
 func (obj *memoryObject) Destroy() error {
 	if int(obj.Fd()) >= 0 {
 		if err := obj.Close(); err != nil {
-			return errors.Wrap(err, "close file failed")
+			return fmt.Errorf("closing file: %w", err)
 		}
 	}
 	return DestroyMemoryObject(obj.Name())
@@ -65,12 +64,12 @@ func (obj *memoryObject) Fd() uintptr {
 func destroyMemoryObject(name string) error {
 	path, err := shmName(name)
 	if err != nil {
-		return errors.Wrap(err, "shm name failed")
+		return fmt.Errorf("shm name: %w", err)
 	}
 	if err = os.Remove(path); os.IsNotExist(err) {
 		err = nil
 	} else {
-		err = errors.Wrap(err, "remove file failed")
+		err = fmt.Errorf("removing file: %w", err)
 	}
 	return err
 }
@@ -78,7 +77,7 @@ func destroyMemoryObject(name string) error {
 func shmName(name string) (string, error) {
 	path, err := sharedDirName()
 	if err != nil {
-		return "", errors.Wrap(err, "failed to get tmp directory name")
+		return "", fmt.Errorf("getting tmp directory name: %w", err)
 	}
 	return path + "/" + name, nil
 }

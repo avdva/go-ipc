@@ -5,6 +5,7 @@
 package sync
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/avdva/go-ipc/internal/helper"
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
-	"github.com/pkg/errors"
 )
 
 // cond is a condvar implemented as a shared queue of waiters.
@@ -33,7 +33,7 @@ func newCond(name string, flag int, perm os.FileMode, l IPCLocker) (*cond, error
 
 	region, created, err := helper.CreateWritableRegion(condSharedStateName(name), flag, perm, size)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create shared state")
+		return nil, fmt.Errorf("creating shared state: %w", err)
 	}
 
 	result := &cond{L: l, name: name, waitersRegion: region}
@@ -48,13 +48,13 @@ func newCond(name string, flag int, perm os.FileMode, l IPCLocker) (*cond, error
 	// when previous mutex owner crashed, and the mutex is in incosistient state.
 	if created {
 		if err = DestroyMutex(condMutexName(name)); err != nil {
-			return nil, errors.Wrap(err, "cond: failed to access a locker")
+			return nil, fmt.Errorf("cleaning up a mutex: %w", err)
 		}
 	}
 
 	result.listLock, err = NewMutex(condMutexName(name), flag, perm)
 	if err != nil {
-		return nil, errors.Wrap(err, "cond: failed to obtain internal lock")
+		return nil, fmt.Errorf("obtaining internal lock: %w", err)
 	}
 
 	rawData := allocator.ByteSliceData(result.waitersRegion.Data())
@@ -131,10 +131,10 @@ func (c *cond) addToWaitersList() *waiter {
 func (c *cond) close() error {
 	var result error
 	if err := c.listLock.Close(); err != nil {
-		result = errors.Wrap(err, "failed to close waiters list locker")
+		result = fmt.Errorf("closing waiters list locker: %w", err)
 	}
 	if err := c.waitersRegion.Close(); err != nil {
-		result = errors.Wrap(err, "failed to close waiters list memory region")
+		result = fmt.Errorf("closing waiters list memory region: %w", err)
 	}
 	return result
 }
@@ -142,13 +142,13 @@ func (c *cond) close() error {
 func (c *cond) destroy() error {
 	var result error
 	if err := c.close(); err != nil {
-		result = errors.Wrap(err, "destroy failed")
+		result = fmt.Errorf("closing cond: %w", err)
 	}
 	if err := DestroyMutex(condMutexName(c.name)); err != nil {
-		result = errors.Wrap(err, "failed to destroy waiters list locker")
+		result = fmt.Errorf("destroying waiters list locker: %w", err)
 	}
 	if err := shm.DestroyMemoryObject(condSharedStateName(c.name)); err != nil {
-		result = errors.Wrap(err, "failed to destroy waiters list memory object")
+		result = fmt.Errorf("destroying waiters list memory object: %w", err)
 	}
 	return result
 }
@@ -177,11 +177,11 @@ func condCleanup(result *cond, name string, created bool) {
 func destroyCond(name string) error {
 	result := DestroyMutex(condMutexName(name))
 	if result != nil {
-		result = errors.Wrap(result, "failed to destroy cond list mutex")
+		result = fmt.Errorf("destroying cond list mutex: %w", result)
 	}
 	if err := shm.DestroyMemoryObject(condSharedStateName(name)); err != nil {
 		if result == nil {
-			result = errors.Wrap(err, "failed to destroy shared cond state")
+			result = fmt.Errorf("destroying shared cond state: %w", err)
 		}
 	}
 	return result
