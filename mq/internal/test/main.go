@@ -35,7 +35,7 @@ func create() error {
 	if flag.NArg() != 1 {
 		return fmt.Errorf("create: must provide exactly one argument")
 	}
-	mq, err := createMqWithType(*objName, 0666, *typ, *options)
+	mq, err := createMqWithType(*objName, 0o666, *typ, *options)
 	if err == nil {
 		mq.Close()
 	}

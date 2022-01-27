@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build darwin || (linux && sysv_mutex_linux) || (freebsd && sysv_mutex_freebsd)
 // +build darwin linux,sysv_mutex_linux freebsd,sysv_mutex_freebsd
 
 package sync

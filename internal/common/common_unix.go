@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build darwin || freebsd || linux
 // +build darwin freebsd linux
 
 package common
@@ -15,11 +16,11 @@ import (
 
 const (
 	// IpcCreate flag tells a function to create an object if key is nonexistent.
-	IpcCreate = 00001000
+	IpcCreate = 0o0001000
 	// IpcExcl flag tells a function to create an object if key is nonexistent and fail if key exists.
-	IpcExcl = 00002000
+	IpcExcl = 0o0002000
 	// IpcNoWait flag tell a function to return error on wait.
-	IpcNoWait = 00004000
+	IpcNoWait = 0o0004000
 
 	// IpcRmid flag tells a function to remove resource.
 	IpcRmid = 0

@@ -84,7 +84,7 @@ func shmName(name string) (string, error) {
 
 func sharedDirName() (string, error) {
 	rootPath := os.TempDir() + "/go-ipc"
-	if err := os.Mkdir(rootPath, 0644); err != nil && !os.IsExist(err) {
+	if err := os.Mkdir(rootPath, 0o644); err != nil && !os.IsExist(err) {
 		return "", err
 	}
 	return rootPath, nil

@@ -19,9 +19,7 @@ const (
 	MEM_COPY_ON_WRITE = 0x00000008
 )
 
-var (
-	mmapOffsetMultiple int64
-)
+var mmapOffsetMultiple int64
 
 // MemoryRegion is a mmapped area of a memory object.
 // Warning. The internal object has a finalizer set,

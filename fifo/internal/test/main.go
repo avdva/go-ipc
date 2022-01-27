@@ -34,7 +34,7 @@ func create() error {
 		return fmt.Errorf("create: must provide exactly one arguments")
 	}
 	mode := os.O_CREATE | fifo.O_NONBLOCK | os.O_RDONLY
-	obj, err := fifo.New(*objName, mode, 0666)
+	obj, err := fifo.New(*objName, mode, 0o666)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func read() error {
 	if *nonBlock {
 		mode |= fifo.O_NONBLOCK
 	}
-	obj, err := fifo.New(*objName, mode, 0666)
+	obj, err := fifo.New(*objName, mode, 0o666)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func test() error {
 	var obj fifo.Fifo
 	var err error
 	completed := testutil.WaitForFunc(func() {
-		obj, err = fifo.New(*objName, mode, 0666)
+		obj, err = fifo.New(*objName, mode, 0o666)
 	}, time.Second*2)
 	if !completed {
 		return fmt.Errorf("fifo.New took too long to finish")
@@ -129,7 +129,7 @@ func write() error {
 	if *nonBlock {
 		mode |= fifo.O_NONBLOCK
 	}
-	obj, err := fifo.New(*objName, mode, 0666)
+	obj, err := fifo.New(*objName, mode, 0o666)
 	if err != nil {
 		return err
 	}

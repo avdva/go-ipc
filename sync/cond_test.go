@@ -21,11 +21,11 @@ const (
 func makeTestCond(a *assert.Assertions) (cond *Cond, l IPCLocker, err error) {
 	a.NoError(DestroyCond(testCondName))
 	a.NoError(DestroyMutex(testCondMutName))
-	l, err = NewMutex(testCondMutName, os.O_CREATE|os.O_EXCL, 0666)
+	l, err = NewMutex(testCondMutName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) {
 		return
 	}
-	cond, err = NewCond(testCondName, os.O_CREATE|os.O_EXCL, 0666, l)
+	cond, err = NewCond(testCondName, os.O_CREATE|os.O_EXCL, 0o666, l)
 	if !a.NoError(err) {
 		return
 	}
@@ -171,7 +171,7 @@ func TestCondWaitAnotherProcess(t *testing.T) {
 		return
 	}
 	defer destroyTestCond(a, cond, l)
-	ev, err := NewEvent(waitEvent, os.O_CREATE|os.O_EXCL, 0666, true)
+	ev, err := NewEvent(waitEvent, os.O_CREATE|os.O_EXCL, 0o666, true)
 	if a.NoError(err) {
 		return
 	}

@@ -91,7 +91,7 @@ func Destroy(name string) error {
 }
 
 func checkMqPerm(perm os.FileMode) bool {
-	return uint(perm)&0111 == 0
+	return uint(perm)&0o111 == 0
 }
 
 // IsTemporary returns true, if an error is a timeout error.

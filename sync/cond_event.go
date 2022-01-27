@@ -32,7 +32,7 @@ func nextID() uint32 {
 func newWaiter(ptr unsafe.Pointer) *waiter {
 	for {
 		id := uint64(pid)<<32 | uint64(nextID())
-		e, err := NewEvent(condWaiterEventName(id), os.O_CREATE|os.O_EXCL, 0666, false)
+		e, err := NewEvent(condWaiterEventName(id), os.O_CREATE|os.O_EXCL, 0o666, false)
 		if err == nil {
 			result := &waiter{id: (*uint64)(ptr), e: e}
 			*result.id = id

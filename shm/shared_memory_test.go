@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/avdva/go-ipc/internal/test"
+	testutil "github.com/avdva/go-ipc/internal/test"
 	"github.com/avdva/go-ipc/mmf"
 
 	"github.com/stretchr/testify/assert"
@@ -68,7 +69,7 @@ func argsForShmWriteCommand(name, typ string, offset int64, data []byte) []strin
 }
 
 func createMemoryRegionSimple(objMode, regionMode int, size int64, offset int64) (*mmf.MemoryRegion, error) {
-	object, err := NewMemoryObject(defaultObjectName, objMode, 0666)
+	object, err := NewMemoryObject(defaultObjectName, objMode, 0o666)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +92,7 @@ func createMemoryRegionSimple(objMode, regionMode int, size int64, offset int64)
 }
 
 func TestCreateMemoryObject(t *testing.T) {
-	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0o666)
 	assert.NoError(t, err)
 	if assert.NotNil(t, obj) {
 		assert.NoError(t, obj.Close())
@@ -101,7 +102,7 @@ func TestCreateMemoryObject(t *testing.T) {
 }
 
 func TestOpenMemoryObjectReadonly(t *testing.T) {
-	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -117,19 +118,19 @@ func TestOpenMemoryObjectReadonly(t *testing.T) {
 }
 
 func TestDestroyMemoryObject(t *testing.T) {
-	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0o666)
 	assert.NoError(t, err)
 	if assert.NotNil(t, obj) {
 		if !assert.NoError(t, obj.Destroy()) {
 			return
 		}
-		_, err = NewMemoryObject(defaultObjectName, os.O_RDONLY, 0666)
+		_, err = NewMemoryObject(defaultObjectName, os.O_RDONLY, 0o666)
 		assert.Error(t, err)
 	}
 }
 
 func TestDestroyMemoryObject2(t *testing.T) {
-	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0o666)
 	if assert.NoError(t, err) {
 		obj.Close()
 		assert.NoError(t, DestroyMemoryObject(defaultObjectName))
@@ -137,11 +138,11 @@ func TestDestroyMemoryObject2(t *testing.T) {
 }
 
 func TestCreateMemoryRegionExclusive(t *testing.T) {
-	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
-	_, err = NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
+	_, err = NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0o666)
 	assert.Error(t, err)
 	obj.Destroy()
 }
@@ -152,7 +153,7 @@ func TestMemoryObjectSize(t *testing.T) {
 	if !a.NoError(DestroyMemoryObject(defaultObjectName)) {
 		return
 	}
-	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0o666)
 	defer func() {
 		a.NoError(obj.Destroy())
 	}()
@@ -175,7 +176,7 @@ func TestMemoryObjectSize(t *testing.T) {
 
 func TestMemoryObjectName(t *testing.T) {
 	a := assert.New(t)
-	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0o666)
 	if a.NoError(err) {
 		a.Equal(defaultObjectName, obj.Name())
 		a.NoError(obj.Destroy())
@@ -183,7 +184,7 @@ func TestMemoryObjectName(t *testing.T) {
 }
 
 func TestIfRegionIsAliveAferObjectClose(t *testing.T) {
-	object, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0666)
+	object, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -215,22 +216,28 @@ func TestMemoryObjectCloseOnGc(t *testing.T) {
 	if !assert.NoError(t, DestroyMemoryObject(defaultObjectName)) {
 		return
 	}
-	object, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0666)
+	object, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_RDWR, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
+	var called uint32
+	runtime.SetFinalizer(object.memoryObject, nil)
+	runtime.SetFinalizer(object.memoryObject, func(mo *memoryObject) {
+		defaultMemObjectFinaliser(mo)
+		assert.Equal(t, int(-1), int(mo.file.Fd()))
+		atomic.StoreUint32(&called, 1)
+	})
 	defer func() {
 		assert.NoError(t, DestroyMemoryObject(defaultObjectName))
 	}()
-	file := object.file
 	object = nil
-	// this is to assure, that the finalized was called and that the
+	// this is to ensure, that the finalizer was called and that the
 	// corresponding file was closed. this test can theoretically fail, and
-	// we use several attempts, as it is not guaranteed that the object is garbage-collected
-	// after a call to GC()
+	// we try several times, as it is not guaranteed that the object is garbage-collected
+	// after a call to GC().
 	for i := 0; i < 5; i++ {
 		runtime.GC()
-		if int(-1) == int(file.Fd()) {
+		if atomic.LoadUint32(&called) > 0 {
 			return
 		}
 		time.Sleep(time.Millisecond * 20)
@@ -286,7 +293,7 @@ func TestReadMemoryAnotherProcess(t *testing.T) {
 	if !a.NoError(DestroyMemoryObject(defaultObjectName)) {
 		return
 	}
-	object, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
+	object, err := NewMemoryObject(defaultObjectName, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -314,7 +321,7 @@ func TestMemoryRegionNorGcedWithUse(t *testing.T) {
 	if !a.NoError(DestroyMemoryObject("gc-test")) {
 		return
 	}
-	obj, err := NewMemoryObject("gc-test", os.O_CREATE|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject("gc-test", os.O_CREATE|os.O_RDWR, 0o666)
 	if !a.NoError(err) {
 		return
 	}

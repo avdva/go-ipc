@@ -61,7 +61,7 @@ func inc64() error {
 	if flag.NArg() != 3 {
 		return fmt.Errorf("test: must provide exactly two arguments")
 	}
-	memObject, err := shm.NewMemoryObject(flag.Arg(1), os.O_RDWR, 0666)
+	memObject, err := shm.NewMemoryObject(flag.Arg(1), os.O_RDWR, 0o666)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func test() error {
 	if flag.NArg() != 4 {
 		return fmt.Errorf("test: must provide exactly three arguments")
 	}
-	memObject, err := shm.NewMemoryObject(flag.Arg(1), os.O_RDONLY, 0666)
+	memObject, err := shm.NewMemoryObject(flag.Arg(1), os.O_RDONLY, 0o666)
 	if err != nil {
 		return err
 	}

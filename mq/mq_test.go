@@ -25,9 +25,11 @@ const (
 	mqProgPath = "./internal/test/"
 )
 
-type mqCtor func(name string, flag int, perm os.FileMode) (Messenger, error)
-type mqOpener func(name string, flag int) (Messenger, error)
-type mqDtor func(name string) error
+type (
+	mqCtor   func(name string, flag int, perm os.FileMode) (Messenger, error)
+	mqOpener func(name string, flag int) (Messenger, error)
+	mqDtor   func(name string) error
+)
 
 var (
 	mqProgArgs       []string
@@ -36,7 +38,7 @@ var (
 
 func detectMutexType() {
 	ipc_sync.DestroyMutex("testLocker")
-	m, err := ipc_sync.NewMutex("testLocker", os.O_CREATE, 0666)
+	m, err := ipc_sync.NewMutex("testLocker", os.O_CREATE, 0o666)
 	if err != nil {
 		panic(err)
 	}
@@ -75,7 +77,7 @@ func testCreateMq(t *testing.T, ctor mqCtor, dtor mqDtor) {
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if a.NoError(err) {
 		a.NoError(mq.Close())
 		if dtor != nil {
@@ -89,11 +91,11 @@ func testCreateMqExcl(t *testing.T, ctor mqCtor, dtor mqDtor) {
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !a.NoError(err) || !a.NotNil(mq) {
 		return
 	}
-	_, err = ctor(testMqName, os.O_EXCL, 0666)
+	_, err = ctor(testMqName, os.O_EXCL, 0o666)
 	a.Error(err)
 	if d, ok := mq.(common.Destroyer); ok {
 		a.NoError(d.Destroy())
@@ -107,7 +109,7 @@ func testCreateMqInvalidPerm(t *testing.T, ctor mqCtor, dtor mqDtor) {
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	_, err := ctor(testMqName, os.O_EXCL, 0777)
+	_, err := ctor(testMqName, os.O_EXCL, 0o777)
 	a.Error(err)
 }
 
@@ -116,7 +118,7 @@ func testOpenMq(t *testing.T, ctor mqCtor, opener mqOpener, dtor mqDtor) {
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !a.NoError(err) || !a.NotNil(mq) {
 		return
 	}
@@ -129,12 +131,12 @@ func testOpenMq(t *testing.T, ctor mqCtor, opener mqOpener, dtor mqDtor) {
 }
 
 func testMqSendIntSameProcess(t *testing.T, ctor mqCtor, opener mqOpener, dtor mqDtor) {
-	var message = uint64(0xDEADBEEFDEADBEEF)
+	message := uint64(0xDEADBEEFDEADBEEF)
 	a := assert.New(t)
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -181,7 +183,7 @@ func testMqSendStructSameProcess(t *testing.T, ctor mqCtor, opener mqOpener, dto
 		f:   11.22,
 		s:   struct{ a, b byte }{127, 255},
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -212,7 +214,7 @@ func testMqSendMessageLessThenBuffer(t *testing.T, ctor mqCtor, opener mqOpener,
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -247,7 +249,7 @@ func testMqSendNonBlock(t *testing.T, ctor mqCtor, dtor mqDtor) {
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -281,7 +283,7 @@ func testMqSendTimeout(t *testing.T, ctor mqCtor, dtor mqDtor) {
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -305,7 +307,6 @@ func testMqSendTimeout(t *testing.T, ctor mqCtor, dtor mqDtor) {
 		a.Error(err)
 		a.True(IsTemporary(err))
 		if !a.True(time.Since(now) >= tm) {
-
 		}
 	} else {
 		t.Skipf("current mq impl on %s does not implement TimedMessenger", runtime.GOOS)
@@ -317,7 +318,7 @@ func testMqReceiveTimeout(t *testing.T, ctor mqCtor, dtor mqDtor) {
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -335,7 +336,6 @@ func testMqReceiveTimeout(t *testing.T, ctor mqCtor, dtor mqDtor) {
 			a.True(sysErr.Temporary())
 		}
 		if !a.True(time.Since(now) >= tm) {
-
 		}
 	} else {
 		t.Skipf("current mq impl on %s does not implement TimedMessenger", runtime.GOOS)
@@ -347,7 +347,7 @@ func testMqReceiveNonBlock(t *testing.T, ctor mqCtor, dtor mqDtor) {
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -382,7 +382,7 @@ func testMqSendToAnotherProcess(t *testing.T, ctor mqCtor, dtor mqDtor, typ stri
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -411,7 +411,7 @@ func testMqReceiveFromAnotherProcess(t *testing.T, ctor mqCtor, dtor mqDtor, typ
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, 0, 0666)
+	mq, err := ctor(testMqName, 0, 0o666)
 	if !a.NoError(err) {
 		return
 	}

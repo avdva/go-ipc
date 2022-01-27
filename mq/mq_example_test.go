@@ -10,7 +10,7 @@ import (
 
 func ExampleMessenger() {
 	Destroy("mq")
-	mq, err := New("mq", os.O_CREATE|os.O_EXCL, 0666)
+	mq, err := New("mq", os.O_CREATE|os.O_EXCL, 0o666)
 	if err != nil {
 		panic("new queue")
 	}
@@ -43,7 +43,7 @@ func ExampleMessenger() {
 
 func ExampleTimedMessenger() {
 	Destroy("mq")
-	mq, err := New("mq", os.O_CREATE|os.O_EXCL, 0666)
+	mq, err := New("mq", os.O_CREATE|os.O_EXCL, 0o666)
 	if err != nil {
 		panic("new queue")
 	}
@@ -88,7 +88,7 @@ func ExampleTimedMessenger() {
 
 func ExamplePriorityMessenger() {
 	Destroy("mq")
-	mq, err := New("mq", os.O_CREATE|os.O_EXCL, 0666)
+	mq, err := New("mq", os.O_CREATE|os.O_EXCL, 0o666)
 	if err != nil {
 		panic("new queue")
 	}

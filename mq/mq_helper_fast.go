@@ -1,6 +1,7 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
-//+build windows
+//go:build windows
+// +build windows
 
 package mq
 

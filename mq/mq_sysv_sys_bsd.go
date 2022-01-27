@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build freebsd
 // +build freebsd
 
 package mq

@@ -24,11 +24,11 @@ available commands:
 `
 
 func makeCond(condName, lockerName string) (cond *sync.Cond, l sync.IPCLocker, err error) {
-	l, err = sync.NewMutex(lockerName, 0, 0666)
+	l, err = sync.NewMutex(lockerName, 0, 0o666)
 	if err != nil {
 		return
 	}
-	cond, err = sync.NewCond(condName, 0, 0666, l)
+	cond, err = sync.NewCond(condName, 0, 0o666, l)
 	return
 }
 
@@ -36,7 +36,7 @@ func wait() error {
 	if flag.NArg() != 4 {
 		return fmt.Errorf("wait: must provide cond and locker name only")
 	}
-	ev, err := sync.NewEvent(flag.Arg(1), 0, 0666, false)
+	ev, err := sync.NewEvent(flag.Arg(1), 0, 0o666, false)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func signal() error {
 		return fmt.Errorf("signal: must provide cond name only")
 	}
 	condName := flag.Arg(1)
-	cond, err := sync.NewCond(condName, 0, 0666, nil)
+	cond, err := sync.NewCond(condName, 0, 0o666, nil)
 	if err != nil {
 		return nil
 	}
@@ -80,7 +80,7 @@ func broadcast() error {
 		return fmt.Errorf("broadcast: must provide cond name only")
 	}
 	condName := flag.Arg(1)
-	cond, err := sync.NewCond(condName, 0, 0666, nil)
+	cond, err := sync.NewCond(condName, 0, 0o666, nil)
 	if err != nil {
 		return nil
 	}

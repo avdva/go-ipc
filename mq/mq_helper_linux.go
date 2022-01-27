@@ -1,6 +1,7 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
-//+build linux_mq
+//go:build linux_mq
+// +build linux_mq
 
 package mq
 

@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build windows || darwin
 // +build windows darwin
 
 package sync

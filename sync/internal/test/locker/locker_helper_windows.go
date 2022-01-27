@@ -12,11 +12,11 @@ import (
 func createLocker(typ, name string, mode int) (locker sync.Locker, err error) {
 	switch typ {
 	case "m":
-		locker, err = ipc_sync.NewMutex(name, mode, 0666)
+		locker, err = ipc_sync.NewMutex(name, mode, 0o666)
 	case "spin":
-		locker, err = ipc_sync.NewSpinMutex(name, mode, 0666)
+		locker, err = ipc_sync.NewSpinMutex(name, mode, 0o666)
 	case "rw":
-		locker, err = ipc_sync.NewRWMutex(name, mode, 0666)
+		locker, err = ipc_sync.NewRWMutex(name, mode, 0o666)
 	default:
 		err = fmt.Errorf("unknown object type %q", typ)
 	}

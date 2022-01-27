@@ -72,44 +72,46 @@ func TestRWMutexPanicsOnDoubleRUnlock(t *testing.T) {
 
 func ExampleRWMutex() {
 	const (
-		writers = 4
-		readers = 10
+		parallel = 20
 	)
-	DestroyRWMutex("rw")
-	m, err := NewRWMutex("rw", os.O_CREATE|os.O_EXCL, 0666)
+	err := DestroyRWMutex("rw")
 	if err != nil {
 		panic(err)
 	}
-	// we create a shared array of consistently increasing ints for reading and wriring.
-	sharedData := make([]int, 128)
+	m, err := NewRWMutex("rw", os.O_CREATE|os.O_EXCL, 0o666)
+	if err != nil {
+		panic(err)
+	}
+	// we create a shared array of constantly increasing ints for reading and wriring.
+	sharedData := make([]int, 8*1024)
 	for i := range sharedData {
 		sharedData[i] = i
 	}
 	var wg sync.WaitGroup
-	wg.Add(writers + readers)
+	wg.Add(parallel)
 	// writers will update the data.
-	for i := 0; i < writers; i++ {
+	for i := 0; i < parallel/2; i++ {
 		go func() {
 			defer wg.Done()
 			start := rand.Intn(1024)
 			m.Lock()
+			defer m.Unlock()
+			for i := range sharedData {
+				sharedData[i] = 0
+			}
 			for i := range sharedData {
 				sharedData[i] = i + start
 			}
-			m.Unlock()
 		}()
-	}
-	// readers will check the data.
-	for i := 0; i < readers; i++ {
 		go func() {
 			defer wg.Done()
-			m.RLock()
+			m.Lock()
+			defer m.Unlock()
 			for i := 1; i < len(sharedData); i++ {
 				if sharedData[i] != sharedData[i-1]+1 {
 					panic("bad data")
 				}
 			}
-			m.RUnlock()
 		}()
 	}
 	wg.Wait()

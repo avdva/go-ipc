@@ -14,8 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type prioMqCtor func(name string, flag int, perm os.FileMode, maxQueueSize, maxMsgSize int) (PriorityMessenger, error)
-type prioMqOpener func(name string, flag int) (PriorityMessenger, error)
+type (
+	prioMqCtor   func(name string, flag int, perm os.FileMode, maxQueueSize, maxMsgSize int) (PriorityMessenger, error)
+	prioMqOpener func(name string, flag int) (PriorityMessenger, error)
+)
 
 func testPrioMq1(t *testing.T, ctor prioMqCtor, opener prioMqOpener, dtor mqDtor) {
 	prios := [...]int{8, 4, 7, 1, 0, 15, 2, 4}
@@ -23,7 +25,7 @@ func testPrioMq1(t *testing.T, ctor prioMqCtor, opener prioMqOpener, dtor mqDtor
 	if dtor != nil {
 		a.NoError(dtor(testMqName))
 	}
-	mq, err := ctor(testMqName, O_NONBLOCK, 0666, len(prios), 8)
+	mq, err := ctor(testMqName, O_NONBLOCK, 0o666, len(prios), 8)
 	if !a.NoError(err) {
 		return
 	}
@@ -66,7 +68,7 @@ func benchmarkPrioMq1(b *testing.B, ctor prioMqCtor, opener prioMqOpener, dtor m
 	if dtor != nil {
 		dtor(testMqName)
 	}
-	mq, err := ctor(testMqName, params.flag|O_NONBLOCK, 0666, params.mqSize, params.msgSize)
+	mq, err := ctor(testMqName, params.flag|O_NONBLOCK, 0o666, params.mqSize, params.msgSize)
 	if err != nil {
 		b.Error(err)
 		return

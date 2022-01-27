@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build (linux && amd64) || darwin || freebsd
 // +build linux,amd64 darwin freebsd
 
 package sync

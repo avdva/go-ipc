@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build linux || freebsd
 // +build linux freebsd
 
 package sync
@@ -14,6 +15,8 @@ import (
 
 	"github.com/avdva/go-ipc/internal/common"
 )
+
+var _ waitWaker = (*futex)(nil)
 
 const (
 	cFutexWakeAll = math.MaxInt32

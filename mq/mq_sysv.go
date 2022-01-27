@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build darwin || freebsd || linux
 // +build darwin freebsd linux
 
 package mq
@@ -28,8 +29,7 @@ type SystemVMessageQueue struct {
 }
 
 // msqidDs is for msgctl syscall, but it is not currently used
-type msqidDs struct {
-}
+type msqidDs struct{}
 
 // this is to ensure, that system V implementation of ipc mq
 // satisfies the minimal queue interface

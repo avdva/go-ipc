@@ -1,6 +1,7 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
-//+build freebsd linux
+//go:build freebsd || linux
+// +build freebsd linux
 
 package sync
 

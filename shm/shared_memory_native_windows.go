@@ -19,9 +19,7 @@ const (
 	O_COPY_ON_WRITE = windows.O_NONBLOCK
 )
 
-var (
-	_ SharedMemoryObject = (*WindowsNativeMemoryObject)(nil)
-)
+var _ SharedMemoryObject = (*WindowsNativeMemoryObject)(nil)
 
 // WindowsNativeMemoryObject represents a standart windows shm implementation backed by a paging file.
 // Can be used to map shared memory regions into the process' address space.

@@ -1,5 +1,6 @@
 // Copyright 2015 Aleksandr Demakin. All rights reserved.
 
+//go:build linux
 // +build linux
 
 package mq
@@ -9,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/avdva/go-ipc/internal/test"
+	testutil "github.com/avdva/go-ipc/internal/test"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -87,7 +88,7 @@ func TestLinuxMqGetAttrs(t *testing.T) {
 	if !assert.NoError(t, DestroyLinuxMessageQueue(testMqName)) {
 		return
 	}
-	mq, err := CreateLinuxMessageQueue(testMqName, os.O_EXCL|os.O_RDWR, 0666, 5, 121)
+	mq, err := CreateLinuxMessageQueue(testMqName, os.O_EXCL|os.O_RDWR, 0o666, 5, 121)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -104,7 +105,7 @@ func TestLinuxMqNotifyOnce(t *testing.T) {
 	if !assert.NoError(t, DestroyLinuxMessageQueue(testMqName)) {
 		return
 	}
-	mq, err := CreateLinuxMessageQueue(testMqName, os.O_EXCL|os.O_RDWR, 0666, 5, 121)
+	mq, err := CreateLinuxMessageQueue(testMqName, os.O_EXCL|os.O_RDWR, 0o666, 5, 121)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -114,7 +115,7 @@ func TestLinuxMqNotifyOnce(t *testing.T) {
 	ch := make(chan int)
 	assert.NoError(t, mq.Notify(ch))
 	go func() {
-		mq.Send(make([]byte, 1))
+		assert.NoError(t, mq.Send(make([]byte, 1)))
 	}()
 	assert.Equal(t, mq.ID(), <-ch)
 }
@@ -123,7 +124,7 @@ func TestLinuxMqNotifyTwice(t *testing.T) {
 	if !assert.NoError(t, DestroyLinuxMessageQueue(testMqName)) {
 		return
 	}
-	mq, err := CreateLinuxMessageQueue(testMqName, os.O_EXCL|os.O_RDWR, 0666, 5, 121)
+	mq, err := CreateLinuxMessageQueue(testMqName, os.O_EXCL|os.O_RDWR, 0o666, 5, 121)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -140,7 +141,7 @@ func TestLinuxMqNotifyAnotherProcess(t *testing.T) {
 	if !a.NoError(DestroyLinuxMessageQueue(testMqName)) {
 		return
 	}
-	mq, err := CreateLinuxMessageQueue(testMqName, os.O_EXCL|os.O_RDWR, 0666, 4, 16)
+	mq, err := CreateLinuxMessageQueue(testMqName, os.O_EXCL|os.O_RDWR, 0o666, 4, 16)
 	if !a.NoError(err) {
 		return
 	}

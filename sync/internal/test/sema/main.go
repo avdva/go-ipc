@@ -27,7 +27,7 @@ func wait() error {
 	if flag.NArg() != 2 {
 		return fmt.Errorf("wait: must provide sema name only")
 	}
-	s, err := sync.NewSemaphore(flag.Arg(1), 0, 0666, 0)
+	s, err := sync.NewSemaphore(flag.Arg(1), 0, 0o666, 0)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func signal() error {
 	if flag.NArg() != 3 {
 		return fmt.Errorf("signal: must provide sema name and count")
 	}
-	s, err := sync.NewSemaphore(flag.Arg(1), 0, 0666, 0)
+	s, err := sync.NewSemaphore(flag.Arg(1), 0, 0o666, 0)
 	if err != nil {
 		return err
 	}

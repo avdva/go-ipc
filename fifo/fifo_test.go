@@ -18,9 +18,7 @@ const (
 	fifoProgName = "./internal/test/main.go"
 )
 
-var (
-	testData []byte
-)
+var testData []byte
 
 func init() {
 	testData = make([]byte, 2048)
@@ -65,7 +63,7 @@ func TestFifoCreate(t *testing.T) {
 	if !assert.NoError(t, Destroy(testFifoName)) {
 		return
 	}
-	fifo, err := New(testFifoName, os.O_CREATE|os.O_EXCL|os.O_RDONLY|O_NONBLOCK, 0666)
+	fifo, err := New(testFifoName, os.O_CREATE|os.O_EXCL|os.O_RDONLY|O_NONBLOCK, 0o666)
 	if assert.NoError(t, err) {
 		assert.NoError(t, fifo.Destroy())
 		assert.Error(t, fifo.Destroy())
@@ -81,7 +79,7 @@ func TestFifoBlockReadSameProcess(t *testing.T) {
 	}
 	defer Destroy(testFifoName)
 	go func() {
-		fifo, err2 := New(testFifoName, os.O_CREATE|os.O_WRONLY, 0666)
+		fifo, err2 := New(testFifoName, os.O_CREATE|os.O_WRONLY, 0o666)
 		if !assert.NoError(t, err2) {
 			return
 		}
@@ -92,7 +90,7 @@ func TestFifoBlockReadSameProcess(t *testing.T) {
 	}()
 	buff := make([]byte, len(testData))
 	success := testutil.WaitForFunc(func() {
-		fifo, err2 := New(testFifoName, os.O_CREATE|os.O_RDONLY, 0666)
+		fifo, err2 := New(testFifoName, os.O_CREATE|os.O_RDONLY, 0o666)
 		if !assert.NoError(t, err2) {
 			return
 		}
@@ -123,7 +121,7 @@ func TestFifoBlockReadAnotherProcess(t *testing.T) {
 	var err error
 	success := testutil.WaitForFunc(func() {
 		var fifo Fifo
-		fifo, err = New(testFifoName, os.O_CREATE|os.O_RDONLY, 0666)
+		fifo, err = New(testFifoName, os.O_CREATE|os.O_RDONLY, 0o666)
 		if !assert.NoError(t, err) {
 			return
 		}
@@ -158,7 +156,7 @@ func TestFifoBlockWrite(t *testing.T) {
 	appKillChan := make(chan bool, 1)
 	defer func() { appKillChan <- true }()
 	ch := testutil.RunTestAppAsync(argsForFifoTestCommand(testFifoName, false, testData), appKillChan)
-	fifo, err := New(testFifoName, os.O_CREATE|os.O_WRONLY, 0666)
+	fifo, err := New(testFifoName, os.O_CREATE|os.O_WRONLY, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -186,10 +184,10 @@ func TestFifoNonBlockWrite(t *testing.T) {
 	defer func() { appKillChan <- true }()
 	ch := testutil.RunTestAppAsync(argsForFifoTestCommand(testFifoName, false, testData), appKillChan)
 	// wait for app to launch and start reading from the fifo
-	fifo, err := New(testFifoName, os.O_WRONLY|O_NONBLOCK, 0666)
+	fifo, err := New(testFifoName, os.O_WRONLY|O_NONBLOCK, 0o666)
 	for n := 0; err != nil && n < 50; n++ {
 		<-time.After(time.Millisecond * 200)
-		fifo, err = New(testFifoName, os.O_WRONLY|O_NONBLOCK, 0666)
+		fifo, err = New(testFifoName, os.O_WRONLY|O_NONBLOCK, 0o666)
 	}
 	if !assert.NoError(t, err) {
 		return
@@ -212,7 +210,7 @@ func TestFifoNonBlock1(t *testing.T) {
 	}
 	var err error
 	done := testutil.WaitForFunc(func() {
-		_, err = New(testFifoName, os.O_WRONLY|O_NONBLOCK, 0666)
+		_, err = New(testFifoName, os.O_WRONLY|O_NONBLOCK, 0o666)
 	}, time.Second*2)
 	a.True(done)
 	a.Error(err)
@@ -225,7 +223,7 @@ func TestFifoNonBlock2(t *testing.T) {
 	}
 	var err error
 	done := testutil.WaitForFunc(func() {
-		_, err = New(testFifoName, os.O_WRONLY|O_NONBLOCK, 0666)
+		_, err = New(testFifoName, os.O_WRONLY|O_NONBLOCK, 0o666)
 	}, time.Second*2)
 	a.True(done)
 	a.Error(err)
@@ -236,11 +234,11 @@ func TestFifoNonBlock3(t *testing.T) {
 	if !a.NoError(Destroy(testFifoName)) {
 		return
 	}
-	fifo, err := New(testFifoName, os.O_CREATE|os.O_RDONLY|O_NONBLOCK, 0666)
+	fifo, err := New(testFifoName, os.O_CREATE|os.O_RDONLY|O_NONBLOCK, 0o666)
 	if !a.NoError(err) {
 		return
 	}
-	fifo2, err := New(testFifoName, os.O_WRONLY, 0666)
+	fifo2, err := New(testFifoName, os.O_WRONLY, 0o666)
 	if !a.NoError(err) {
 		a.NoError(fifo.Close())
 		return
@@ -256,7 +254,7 @@ func TestFifoNonBlock4(t *testing.T) {
 	if !a.NoError(Destroy(testFifoName)) {
 		return
 	}
-	fifo, err := New(testFifoName, os.O_CREATE|os.O_WRONLY|O_NONBLOCK, 0666)
+	fifo, err := New(testFifoName, os.O_CREATE|os.O_WRONLY|O_NONBLOCK, 0o666)
 	if !a.Error(err) {
 		fifo.Destroy()
 	}
@@ -265,7 +263,7 @@ func TestFifoNonBlock4(t *testing.T) {
 func ExampleFifo() {
 	testData := []byte{1, 2, 3, 4, 5, 6, 7, 8}
 	go func() {
-		fifo, err := New("fifo", os.O_CREATE|os.O_WRONLY, 0666)
+		fifo, err := New("fifo", os.O_CREATE|os.O_WRONLY, 0o666)
 		if err != nil {
 			panic("new")
 		}
@@ -275,7 +273,7 @@ func ExampleFifo() {
 		}
 	}()
 	buff := make([]byte, len(testData))
-	fifo, err := New("fifo", os.O_CREATE|os.O_RDONLY, 0666)
+	fifo, err := New("fifo", os.O_CREATE|os.O_RDONLY, 0o666)
 	if err != nil {
 		panic("new")
 	}

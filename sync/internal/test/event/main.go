@@ -26,7 +26,7 @@ func wait() error {
 	if flag.NArg() != 2 {
 		return fmt.Errorf("wait: must provide event name only")
 	}
-	ev, err := sync.NewEvent(flag.Arg(1), 0, 0666, false)
+	ev, err := sync.NewEvent(flag.Arg(1), 0, 0o666, false)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func set() error {
 	if flag.NArg() != 2 {
 		return fmt.Errorf("signal: must provide event name only")
 	}
-	ev, err := sync.NewEvent(flag.Arg(1), 0, 0666, false)
+	ev, err := sync.NewEvent(flag.Arg(1), 0, 0o666, false)
 	if err != nil {
 		return err
 	}

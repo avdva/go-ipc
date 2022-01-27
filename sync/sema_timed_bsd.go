@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build darwin || freebsd
 // +build darwin freebsd
 
 package sync

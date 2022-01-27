@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build (linux && !sysv_mutex_linux) || (freebsd && !sysv_mutex_freebsd)
 // +build linux,!sysv_mutex_linux freebsd,!sysv_mutex_freebsd
 
 package sync

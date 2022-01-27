@@ -132,7 +132,7 @@ func createFifoClient(path string, flag int) (windows.Handle, error) {
 }
 
 func createFifoServer(path string, flag int) (windows.Handle, error) {
-	var pipeHandle = windows.InvalidHandle
+	pipeHandle := windows.InvalidHandle
 	namep, err := windows.UTF16PtrFromString(path)
 	if err != nil {
 		return windows.InvalidHandle, fmt.Errorf("invalid filename: %w", err)

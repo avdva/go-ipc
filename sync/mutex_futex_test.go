@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build linux || freebsd
 // +build linux freebsd
 
 package sync
@@ -22,7 +23,7 @@ func BenchmarkFutexMutex(b *testing.B) {
 func BenchmarkFutexMutexAsRW(b *testing.B) {
 	a := assert.New(b)
 	DestroyFutexMutex(testLockerName)
-	m, err := NewFutexMutex(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	m, err := NewFutexMutex(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) {
 		return
 	}

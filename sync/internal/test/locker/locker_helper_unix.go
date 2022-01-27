@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build linux || freebsd || darwin
 // +build linux freebsd darwin
 
 package main
@@ -14,13 +15,13 @@ import (
 func createLocker(typ, name string, flag int) (locker sync.Locker, err error) {
 	switch typ {
 	case "m":
-		locker, err = ipc_sync.NewMutex(name, flag, 0666)
+		locker, err = ipc_sync.NewMutex(name, flag, 0o666)
 	case "msysv":
-		locker, err = ipc_sync.NewSemaMutex(name, flag, 0666)
+		locker, err = ipc_sync.NewSemaMutex(name, flag, 0o666)
 	case "spin":
-		locker, err = ipc_sync.NewSpinMutex(name, flag, 0666)
+		locker, err = ipc_sync.NewSpinMutex(name, flag, 0o666)
 	case "rw":
-		locker, err = ipc_sync.NewRWMutex(name, flag, 0666)
+		locker, err = ipc_sync.NewRWMutex(name, flag, 0o666)
 	default:
 		err = fmt.Errorf("unknown object type %q", typ)
 	}

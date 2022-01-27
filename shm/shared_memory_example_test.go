@@ -12,7 +12,7 @@ func ExampleMemoryObject() {
 	// cleanup previous objects
 	DestroyMemoryObject("obj")
 	// create new object and resize it.
-	obj, err := NewMemoryObject("obj", os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject("obj", os.O_CREATE|os.O_EXCL|os.O_RDWR, 0o666)
 	if err != nil {
 		panic("new")
 	}
@@ -46,7 +46,7 @@ func ExampleMemoryObject_readWriter() {
 	// cleanup previous objects
 	DestroyMemoryObject("obj")
 	// create new object and resize it.
-	obj, err := NewMemoryObject("obj", os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
+	obj, err := NewMemoryObject("obj", os.O_CREATE|os.O_EXCL|os.O_RDWR, 0o666)
 	if err != nil {
 		panic("new")
 	}

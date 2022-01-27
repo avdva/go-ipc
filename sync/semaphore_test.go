@@ -24,11 +24,11 @@ func TestSemaOpenMode(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_RDWR, 0666, 1)
+	s, err := NewSemaphore(testSemaName, os.O_RDWR, 0o666, 1)
 	a.Error(err)
-	s, err = NewSemaphore(testSemaName, os.O_WRONLY, 0666, 1)
+	s, err = NewSemaphore(testSemaName, os.O_WRONLY, 0o666, 1)
 	a.Error(err)
-	s, err = NewSemaphore(testSemaName, os.O_CREATE, 0666, 1)
+	s, err = NewSemaphore(testSemaName, os.O_CREATE, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
@@ -36,7 +36,7 @@ func TestSemaOpenMode(t *testing.T) {
 		a.NoError(s.Close())
 		a.NoError(DestroySemaphore(testSemaName))
 	}(s)
-	s, err = NewSemaphore(testSemaName, 0, 0666, 1)
+	s, err = NewSemaphore(testSemaName, 0, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
@@ -48,7 +48,7 @@ func TestSemaOpenMode2(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 1)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
@@ -56,14 +56,14 @@ func TestSemaOpenMode2(t *testing.T) {
 		a.NoError(s.Close())
 		a.NoError(DestroySemaphore(testSemaName))
 	}(s)
-	s, err = NewSemaphore(testSemaName, 0, 0666, 1)
+	s, err = NewSemaphore(testSemaName, 0, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(s *Semaphore) {
 		a.NoError(s.Close())
 	}(s)
-	s, err = NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 1)
+	s, err = NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 1)
 	if !a.Error(err) {
 		s.Close()
 		DestroySemaphore(testSemaName)
@@ -75,7 +75,7 @@ func TestSemaOpenMode3(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 1)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
@@ -83,7 +83,7 @@ func TestSemaOpenMode3(t *testing.T) {
 		a.NoError(s.Close())
 		a.NoError(DestroySemaphore(testSemaName))
 	}(s)
-	s, err = NewSemaphore(testSemaName, os.O_CREATE, 0666, 1)
+	s, err = NewSemaphore(testSemaName, os.O_CREATE, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
@@ -95,7 +95,7 @@ func TestSemaOpenMode4(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE, 0666, 1)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
@@ -103,14 +103,14 @@ func TestSemaOpenMode4(t *testing.T) {
 		a.NoError(s.Close())
 		a.NoError(DestroySemaphore(testSemaName))
 	}(s)
-	s, err = NewSemaphore(testSemaName, 0, 0666, 1)
+	s, err = NewSemaphore(testSemaName, 0, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(s *Semaphore) {
 		a.NoError(s.Close())
 	}(s)
-	s, err = NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 1)
+	s, err = NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 1)
 	if !a.Error(err) {
 		s.Close()
 		DestroySemaphore(testSemaName)
@@ -122,7 +122,7 @@ func TestSemaOpenMode5(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 1)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
@@ -130,7 +130,7 @@ func TestSemaOpenMode5(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err = NewSemaphore(testSemaName, 0, 0666, 1)
+	s, err = NewSemaphore(testSemaName, 0, 0o666, 1)
 	if !a.Error(err) {
 		s.Close()
 		DestroySemaphore(testSemaName)
@@ -142,7 +142,7 @@ func TestSemaCount(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 16)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 16)
 	if !a.NoError(err) {
 		return
 	}
@@ -166,7 +166,7 @@ func TestSemaCount2(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 0)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 0)
 	if !a.NoError(err) {
 		return
 	}
@@ -191,7 +191,7 @@ func TestTimedSema(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 1)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 1)
 	if !a.NoError(err) {
 		return
 	}
@@ -208,7 +208,7 @@ func TestSemaSignalAnotherProcess(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 0)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 0)
 	if !a.NoError(err) {
 		return
 	}
@@ -240,7 +240,7 @@ func TestSemaWaitAnotherProcess(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 0)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 0)
 	if !a.NoError(err) {
 		return
 	}
@@ -268,7 +268,7 @@ func TestSemaTimedWaitAnotherProcess(t *testing.T) {
 	if !a.NoError(DestroySemaphore(testSemaName)) {
 		return
 	}
-	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0666, 0)
+	s, err := NewSemaphore(testSemaName, os.O_CREATE|os.O_EXCL, 0o666, 0)
 	if !a.NoError(err) {
 		return
 	}
@@ -295,7 +295,7 @@ func TestSemaTimedWaitAnotherProcess(t *testing.T) {
 func ExampleSemaphore() {
 	// create new semaphore with initial count set to 3.
 	DestroySemaphore("sema")
-	sema, err := NewSemaphore("sema", os.O_CREATE|os.O_EXCL, 0666, 3)
+	sema, err := NewSemaphore("sema", os.O_CREATE|os.O_EXCL, 0o666, 3)
 	if err != nil {
 		panic(err)
 	}
@@ -312,7 +312,7 @@ func ExampleSemaphore() {
 		go func() {
 			defer wg.Done()
 			// open existing semaphore
-			sema, err := NewSemaphore("sema", 0, 0666, 0)
+			sema, err := NewSemaphore("sema", 0, 0o666, 0)
 			if err != nil {
 				panic(err)
 			}

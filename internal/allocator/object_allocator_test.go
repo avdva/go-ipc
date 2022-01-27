@@ -29,8 +29,8 @@ func TestCheckObjectType(t *testing.T) {
 	}
 	var i int
 	var c complex128
-	var arr = [3]int{}
-	var arr2 = [3]string{}
+	arr := [3]int{}
+	arr2 := [3]string{}
 	var slsl [][]int
 	var m map[int]int
 
@@ -51,7 +51,7 @@ func TestCheckObjectType(t *testing.T) {
 }
 
 func TestAllocInt(t *testing.T) {
-	var i = 0x01027FFF
+	i := 0x01027FFF
 	data := make([]byte, unsafe.Sizeof(i))
 	if !assert.NoError(t, Alloc(data, i)) {
 		return

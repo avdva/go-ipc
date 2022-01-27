@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build (darwin || freebsd || linux) && !linux_mq && !fast_mq
 // +build darwin freebsd linux
 // +build !linux_mq
 // +build !fast_mq

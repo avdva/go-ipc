@@ -1,5 +1,6 @@
 // Copyright 2015 Aleksandr Demakin. All rights reserved.
 
+//go:build darwin || freebsd || linux
 // +build darwin freebsd linux
 
 package fifo

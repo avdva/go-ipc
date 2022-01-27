@@ -1,5 +1,6 @@
 // Copyright 2016 Aleksandr Demakin. All rights reserved.
 
+//go:build linux || darwin || freebsd
 // +build linux darwin freebsd
 
 package main

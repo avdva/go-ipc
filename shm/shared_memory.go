@@ -11,8 +11,12 @@ import (
 	"github.com/avdva/go-ipc/mmf"
 )
 
+var _ SharedMemoryObject = (*MemoryObject)(nil)
+
 var (
-	_ SharedMemoryObject = (*MemoryObject)(nil)
+	defaultMemObjectFinaliser = func(memObject *memoryObject) {
+		memObject.Close()
+	}
 )
 
 // SharedMemoryObject is an interface, which must be implemented
@@ -42,9 +46,7 @@ func NewMemoryObject(name string, flag int, perm os.FileMode) (*MemoryObject, er
 		return nil, err
 	}
 	result := &MemoryObject{impl}
-	runtime.SetFinalizer(impl, func(memObject *memoryObject) {
-		memObject.Close()
-	})
+	runtime.SetFinalizer(impl, defaultMemObjectFinaliser)
 	return result, nil
 }
 

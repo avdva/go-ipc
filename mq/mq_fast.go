@@ -116,7 +116,7 @@ func OpenFastMq(name string, flag int) (*FastMq, error) {
 	if err != nil {
 		return nil, err
 	}
-	return openFastMq(name, flag&O_NONBLOCK, 0666, maxQueueSize, maxMsgSize)
+	return openFastMq(name, flag&O_NONBLOCK, 0o666, maxQueueSize, maxMsgSize)
 }
 
 // DestroyFastMq permanently removes a FastMq.
@@ -142,7 +142,7 @@ func DestroyFastMq(name string) error {
 
 // FastMqAttrs returns capacity and max message size of the existing mq.
 func FastMqAttrs(name string) (int, int, error) {
-	obj, err := shm.NewMemoryObject(fastMqStateName(name), os.O_RDONLY, 0666)
+	obj, err := shm.NewMemoryObject(fastMqStateName(name), os.O_RDONLY, 0o666)
 	if err != nil {
 		return 0, 0, fmt.Errorf("opening shm object: %w", err)
 	}
@@ -230,7 +230,6 @@ func (mq *FastMq) ReceiveTimeout(data []byte, timeout time.Duration) (int, error
 // ReceivePriorityTimeout receives a message and returns its priority. It blocks if the queue is empty,
 // waiting for not longer, then the timeout.
 func (mq *FastMq) ReceivePriorityTimeout(data []byte, timeout time.Duration) (int, int, error) {
-
 	// optimization: do lock the locker if the queue is empty.
 	if mq.flag&O_NONBLOCK != 0 && mq.Empty() {
 		return 0, 0, mqEmptyError

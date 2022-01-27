@@ -23,18 +23,18 @@ func TestEventOpenMode(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_RDWR, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_RDWR, 0o666, false)
 	a.Error(err)
-	ev, err = NewEvent(testEventName, os.O_WRONLY, 0666, false)
+	ev, err = NewEvent(testEventName, os.O_WRONLY, 0o666, false)
 	a.Error(err)
-	ev, err = NewEvent(testEventName, os.O_CREATE, 0666, false)
+	ev, err = NewEvent(testEventName, os.O_CREATE, 0o666, false)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(ev *Event) {
 		a.NoError(ev.Destroy())
 	}(ev)
-	ev, err = NewEvent(testEventName, 0, 0666, false)
+	ev, err = NewEvent(testEventName, 0, 0o666, false)
 	if !a.NoError(err) {
 		return
 	}
@@ -46,21 +46,21 @@ func TestEventOpenMode2(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE, 0o666, false)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(ev *Event) {
 		a.NoError(ev.Destroy())
 	}(ev)
-	ev, err = NewEvent(testEventName, 0, 0666, false)
+	ev, err = NewEvent(testEventName, 0, 0o666, false)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(ev *Event) {
 		a.NoError(ev.Close())
 	}(ev)
-	ev, err = NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err = NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.Error(err) {
 		ev.Destroy()
 	}
@@ -71,14 +71,14 @@ func TestEventOpenMode3(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(ev *Event) {
 		a.NoError(ev.Destroy())
 	}(ev)
-	ev, err = NewEvent(testEventName, os.O_CREATE, 0666, false)
+	ev, err = NewEvent(testEventName, os.O_CREATE, 0o666, false)
 	if !a.NoError(err) {
 		return
 	}
@@ -90,21 +90,21 @@ func TestEventOpenMode4(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE, 0o666, false)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(ev *Event) {
 		a.NoError(ev.Destroy())
 	}(ev)
-	ev, err = NewEvent(testEventName, 0, 0666, false)
+	ev, err = NewEvent(testEventName, 0, 0o666, false)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(ev *Event) {
 		a.NoError(ev.Close())
 	}(ev)
-	ev, err = NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err = NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.Error(err) {
 		ev.Destroy()
 	}
@@ -115,7 +115,7 @@ func TestEventOpenMode5(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.NoError(err) {
 		return
 	}
@@ -123,7 +123,7 @@ func TestEventOpenMode5(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err = NewEvent(testEventName, 0, 0666, false)
+	ev, err = NewEvent(testEventName, 0, 0o666, false)
 	if !a.Error(err) {
 		ev.Destroy()
 	}
@@ -134,7 +134,7 @@ func TestEventWait(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.NoError(err) || !a.NotNil(ev) {
 		return
 	}
@@ -162,7 +162,7 @@ func TestEventWait2(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.NoError(err) || !a.NotNil(ev) {
 		return
 	}
@@ -178,7 +178,7 @@ func TestEventWait3(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.NoError(err) || !a.NotNil(ev) {
 		return
 	}
@@ -191,7 +191,7 @@ func TestEventWait4(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, true)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, true)
 	if !a.NoError(err) || !a.NotNil(ev) {
 		return
 	}
@@ -204,7 +204,7 @@ func TestEventWait5(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, true)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, true)
 	if !a.NoError(err) || !a.NotNil(ev) {
 		return
 	}
@@ -229,7 +229,7 @@ func TestEventWait6(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.NoError(err) || !a.NotNil(ev) {
 		return
 	}
@@ -247,7 +247,7 @@ func TestEventSetAnotherProcess(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.NoError(err) || !a.NotNil(ev) {
 		return
 	}
@@ -276,7 +276,7 @@ func TestEventWaitAnotherProcess(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.NoError(err) || !a.NotNil(ev) {
 		return
 	}
@@ -303,7 +303,7 @@ func TestEventTimedWaitAnotherProcess(t *testing.T) {
 	if !a.NoError(DestroyEvent(testEventName)) {
 		return
 	}
-	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0666, false)
+	ev, err := NewEvent(testEventName, os.O_CREATE|os.O_EXCL, 0o666, false)
 	if !a.NoError(err) || !a.NotNil(ev) {
 		return
 	}

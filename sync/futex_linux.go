@@ -27,9 +27,7 @@ const (
 	FUTEX_CLOCK_REALTIME = 256
 )
 
-var (
-	futexSyscallErr = os.NewSyscallError("FUTEX", unix.EWOULDBLOCK)
-)
+var futexSyscallErr = os.NewSyscallError("FUTEX", unix.EWOULDBLOCK)
 
 // FutexWait checks if the the value equals futex's value.
 // If it doesn't, Wait returns EWOULDBLOCK.

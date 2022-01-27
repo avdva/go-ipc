@@ -26,9 +26,7 @@ type semun struct {
 	unused uintptr
 }
 
-var (
-	semun_inst = unsafe.Pointer(&semun{})
-)
+var semun_inst = unsafe.Pointer(&semun{})
 
 func semget(k common.Key, nsems, semflg int) (int, error) {
 	id, _, err := unix.Syscall6(unix.SYS_IPC, cSEMGET, uintptr(k), uintptr(nsems), uintptr(semflg), 0, 0)

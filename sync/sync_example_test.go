@@ -11,7 +11,7 @@ import (
 
 func ExampleIPCLocker() {
 	DestroyMutex("mut")
-	mut, err := NewMutex("mut", os.O_CREATE|os.O_EXCL, 0666)
+	mut, err := NewMutex("mut", os.O_CREATE|os.O_EXCL, 0o666)
 	if err != nil {
 		panic("new")
 	}
@@ -42,7 +42,7 @@ func ExampleIPCLocker() {
 
 func ExampleTimedIPCLocker() {
 	DestroyMutex("mut")
-	mut, err := NewMutex("mut", os.O_CREATE|os.O_EXCL, 0666)
+	mut, err := NewMutex("mut", os.O_CREATE|os.O_EXCL, 0o666)
 	if err != nil {
 		panic("new")
 	}
@@ -78,13 +78,13 @@ func ExampleTimedIPCLocker() {
 
 func ExampleCond() {
 	DestroyMutex("mut")
-	mut, err := NewMutex("mut", os.O_CREATE|os.O_EXCL, 0666)
+	mut, err := NewMutex("mut", os.O_CREATE|os.O_EXCL, 0o666)
 	if err != nil {
 		panic("new")
 	}
 	defer mut.Close()
 	DestroyCond("cond")
-	cond, err := NewCond("cond", os.O_CREATE|os.O_EXCL, 0666, mut)
+	cond, err := NewCond("cond", os.O_CREATE|os.O_EXCL, 0o666, mut)
 	if err != nil {
 		panic("new")
 	}
@@ -107,7 +107,7 @@ func ExampleCond() {
 }
 
 func ExampleEvent() {
-	event, err := NewEvent("event", os.O_CREATE|os.O_EXCL, 0666, false)
+	event, err := NewEvent("event", os.O_CREATE|os.O_EXCL, 0o666, false)
 	if err != nil {
 		return
 	}

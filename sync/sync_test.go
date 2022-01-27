@@ -52,7 +52,7 @@ func locate(path string) []string {
 
 func detectMutexType() {
 	DestroyMutex(testLockerName)
-	m, err := NewMutex(testLockerName, os.O_CREATE, 0666)
+	m, err := NewMutex(testLockerName, os.O_CREATE, 0o666)
 	if err != nil {
 		panic(err)
 	}
@@ -73,7 +73,7 @@ func init() {
 }
 
 func createMemoryRegionSimple(objMode, regionMode int, size int64, offset int64) (*mmf.MemoryRegion, error) {
-	object, _, err := shm.NewMemoryObjectSize(testMemObj, objMode, 0666, size)
+	object, _, err := shm.NewMemoryObjectSize(testMemObj, objMode, 0o666, size)
 	if err != nil {
 		return nil, err
 	}

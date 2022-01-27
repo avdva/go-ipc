@@ -13,7 +13,7 @@ import (
 
 	"github.com/avdva/go-ipc/internal/allocator"
 	"github.com/avdva/go-ipc/internal/common"
-	"github.com/avdva/go-ipc/internal/test"
+	testutil "github.com/avdva/go-ipc/internal/test"
 	"github.com/avdva/go-ipc/mmf"
 	"github.com/avdva/go-ipc/shm"
 
@@ -24,8 +24,10 @@ const (
 	testLockerName = "ipclocker"
 )
 
-type lockerCtor func(name string, mode int, perm os.FileMode) (IPCLocker, error)
-type lockerDtor func(name string) error
+type (
+	lockerCtor func(name string, mode int, perm os.FileMode) (IPCLocker, error)
+	lockerDtor func(name string) error
+)
 
 func testLockerOpenMode(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 	a := assert.New(t)
@@ -34,11 +36,11 @@ func testLockerOpenMode(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 			return
 		}
 	}
-	lk, err := ctor(testLockerName, os.O_RDWR, 0666)
+	lk, err := ctor(testLockerName, os.O_RDWR, 0o666)
 	a.Error(err)
-	lk, err = ctor(testLockerName, os.O_WRONLY, 0666)
+	lk, err = ctor(testLockerName, os.O_WRONLY, 0o666)
 	a.Error(err)
-	lk, err = ctor(testLockerName, os.O_CREATE, 0666)
+	lk, err = ctor(testLockerName, os.O_CREATE, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -49,7 +51,7 @@ func testLockerOpenMode(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 			a.NoError(lk.Close())
 		}
 	}(lk)
-	lk, err = ctor(testLockerName, 0, 0666)
+	lk, err = ctor(testLockerName, 0, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -63,7 +65,7 @@ func testLockerOpenMode2(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 			return
 		}
 	}
-	lk, err := ctor(testLockerName, os.O_CREATE, 0666)
+	lk, err := ctor(testLockerName, os.O_CREATE, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -74,14 +76,14 @@ func testLockerOpenMode2(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 			a.NoError(lk.Close())
 		}
 	}(lk)
-	lk, err = ctor(testLockerName, 0, 0666)
+	lk, err = ctor(testLockerName, 0, 0o666)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(lk IPCLocker) {
 		a.NoError(lk.Close())
 	}(lk)
-	_, err = ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	_, err = ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	a.Error(err)
 }
 
@@ -92,7 +94,7 @@ func testLockerOpenMode3(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 			return
 		}
 	}
-	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -103,7 +105,7 @@ func testLockerOpenMode3(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 			a.NoError(lk.Close())
 		}
 	}(lk)
-	lk, err = ctor(testLockerName, os.O_CREATE, 0666)
+	lk, err = ctor(testLockerName, os.O_CREATE, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -117,7 +119,7 @@ func testLockerOpenMode4(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 			return
 		}
 	}
-	lk, err := ctor(testLockerName, os.O_CREATE, 0666)
+	lk, err := ctor(testLockerName, os.O_CREATE, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -128,14 +130,14 @@ func testLockerOpenMode4(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 			a.NoError(lk.Close())
 		}
 	}(lk)
-	lk, err = ctor(testLockerName, 0, 0666)
+	lk, err = ctor(testLockerName, 0, 0o666)
 	if !a.NoError(err) {
 		return
 	}
 	defer func(lk IPCLocker) {
 		a.NoError(lk.Close())
 	}(lk)
-	_, err = ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	_, err = ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.Error(err) {
 		return
 	}
@@ -149,7 +151,7 @@ func testLockerOpenMode5(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 		}
 	}
 
-	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -158,7 +160,7 @@ func testLockerOpenMode5(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 		if !a.NoError(dtor(testLockerName)) {
 			return
 		}
-		_, err = ctor(testLockerName, 0, 0666)
+		_, err = ctor(testLockerName, 0, 0o666)
 		a.Error(err)
 	}
 }
@@ -170,7 +172,7 @@ func testLockerLock(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 			return
 		}
 	}
-	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) || !a.NotNil(lk) {
 		return
 	}
@@ -208,7 +210,7 @@ func testLockerMemory(t *testing.T, typ string, ro bool, ctor lockerCtor, dtor l
 			return
 		}
 	}
-	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -278,7 +280,7 @@ func testLockerValueInc(t *testing.T, typ string, ctor lockerCtor, dtor lockerDt
 			return
 		}
 	}
-	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	lk, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -335,7 +337,7 @@ func testLockerLockTimeout(t *testing.T, typ string, ctor lockerCtor, dtor locke
 	if !a.NoError(dtor(testLockerName)) {
 		return
 	}
-	m, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	m, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) || !a.NotNil(m) {
 		return
 	}
@@ -359,7 +361,7 @@ func testLockerLockTimeout2(t *testing.T, typ string, ctor lockerCtor, dtor lock
 	if !a.NoError(dtor(testLockerName)) {
 		return
 	}
-	m, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	m, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) || !a.NotNil(m) {
 		return
 	}
@@ -394,7 +396,7 @@ func testLockerTwiceUnlock(t *testing.T, ctor lockerCtor, dtor lockerDtor) {
 	if !a.NoError(dtor(testLockerName)) {
 		return
 	}
-	m, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	m, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) || !a.NotNil(m) {
 		return
 	}
@@ -414,7 +416,7 @@ func benchmarkLocker(b *testing.B, ctor lockerCtor, dtor lockerDtor) {
 	if !a.NoError(dtor(testLockerName)) {
 		return
 	}
-	m, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	m, err := ctor(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) || !a.NotNil(m) {
 		return
 	}
@@ -508,7 +510,7 @@ func BenchmarkRWMutexAsRW(b *testing.B) {
 	if !a.NoError(DestroyRWMutex(testLockerName)) {
 		return
 	}
-	m, err := NewRWMutex(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	m, err := NewRWMutex(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -519,7 +521,7 @@ func BenchmarkRWMutexAsRW(b *testing.B) {
 func BenchmarkSemaMutexAsRW(b *testing.B) {
 	a := assert.New(b)
 	DestroySemaMutex(testLockerName)
-	m, err := NewSemaMutex(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	m, err := NewSemaMutex(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) {
 		return
 	}
@@ -530,7 +532,7 @@ func BenchmarkSemaMutexAsRW(b *testing.B) {
 func BenchmarkSpinMutexAsRW(b *testing.B) {
 	a := assert.New(b)
 	DestroySpinMutex(testLockerName)
-	m, err := NewSpinMutex(testLockerName, os.O_CREATE|os.O_EXCL, 0666)
+	m, err := NewSpinMutex(testLockerName, os.O_CREATE|os.O_EXCL, 0o666)
 	if !a.NoError(err) {
 		return
 	}

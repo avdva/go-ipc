@@ -35,7 +35,7 @@ func create() error {
 	if err != nil {
 		return err
 	}
-	obj, err := newShmObject(*objName, os.O_CREATE|os.O_RDWR, 0666, *objType, size)
+	obj, err := newShmObject(*objName, os.O_CREATE|os.O_RDWR, 0o666, *objType, size)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func read() error {
 	if err != nil {
 		return err
 	}
-	object, err := newShmObject(*objName, os.O_RDONLY, 0666, *objType, length)
+	object, err := newShmObject(*objName, os.O_RDONLY, 0o666, *objType, length)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func test() error {
 	if err != nil {
 		return err
 	}
-	object, err := newShmObject(*objName, os.O_RDONLY, 0666, *objType, len(data))
+	object, err := newShmObject(*objName, os.O_RDONLY, 0o666, *objType, len(data))
 	if err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func write() error {
 	if err != nil {
 		return err
 	}
-	object, err := newShmObject(*objName, os.O_CREATE|os.O_RDWR, 0666, *objType, len(data))
+	object, err := newShmObject(*objName, os.O_CREATE|os.O_RDWR, 0o666, *objType, len(data))
 	if err != nil {
 		return err
 	}
