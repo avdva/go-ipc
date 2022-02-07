@@ -22,31 +22,31 @@ const (
 // lwMutex is a lightweight mutex implementation operating on a uint32 memory cell.
 // it tries to minimize amount of syscalls needed to do locking.
 // actual sleeping must be implemented by a waitWaker object.
-type lwMutex struct {
+type lwMutex[wwImpl waitWaker] struct {
 	state *int32
-	ww    waitWaker
+	ww    wwImpl
 }
 
-func newLightweightMutex(state unsafe.Pointer, ww waitWaker) *lwMutex {
-	return &lwMutex{state: (*int32)(state), ww: ww}
+func newLightweightMutex[wwImpl waitWaker](state unsafe.Pointer, ww wwImpl) *lwMutex[wwImpl] {
+	return &lwMutex[wwImpl]{state: (*int32)(state), ww: ww}
 }
 
 // init writes initial value into mutex's memory location.
-func (lwm *lwMutex) init() {
+func (lwm *lwMutex[wwImpl]) init() {
 	*lwm.state = lwmUnlocked
 }
 
-func (lwm *lwMutex) lock() {
+func (lwm *lwMutex[wwImpl]) lock() {
 	if err := lwm.doLock(-1); err != nil {
 		panic(err)
 	}
 }
 
-func (lwm *lwMutex) tryLock() bool {
+func (lwm *lwMutex[wwImpl]) tryLock() bool {
 	return atomic.CompareAndSwapInt32(lwm.state, lwmUnlocked, lwmLockedNoWaiters)
 }
 
-func (lwm *lwMutex) lockTimeout(timeout time.Duration) bool {
+func (lwm *lwMutex[wwImpl]) lockTimeout(timeout time.Duration) bool {
 	err := lwm.doLock(timeout)
 	if err == nil {
 		return true
@@ -57,7 +57,7 @@ func (lwm *lwMutex) lockTimeout(timeout time.Duration) bool {
 	panic(err)
 }
 
-func (lwm *lwMutex) doLock(timeout time.Duration) error {
+func (lwm *lwMutex[wwImpl]) doLock(timeout time.Duration) error {
 	for i := 0; i < lwmSpinCount; i++ {
 		if lwm.tryLock() {
 			return nil
@@ -76,7 +76,7 @@ func (lwm *lwMutex) doLock(timeout time.Duration) error {
 	return nil
 }
 
-func (lwm *lwMutex) unlock() {
+func (lwm *lwMutex[wwImpl]) unlock() {
 	if old := atomic.LoadInt32(lwm.state); old == lwmLockedHaveWaiters {
 		*lwm.state = lwmUnlocked
 	} else {

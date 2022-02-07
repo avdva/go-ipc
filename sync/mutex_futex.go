@@ -23,7 +23,7 @@ var (
 
 // FutexMutex is a mutex based on linux/freebsd futex object.
 type FutexMutex struct {
-	lwm    *lwMutex
+	lwm    *lwMutex[*futex]
 	region *mmf.MemoryRegion
 	name   string
 }

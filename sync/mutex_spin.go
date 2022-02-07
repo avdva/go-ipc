@@ -21,7 +21,7 @@ var (
 
 // SpinMutex is a synchronization object which performs busy wait loop.
 type SpinMutex struct {
-	lwm    *lwMutex
+	lwm    *lwMutex[*spinWW]
 	region *mmf.MemoryRegion
 	name   string
 }

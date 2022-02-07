@@ -24,7 +24,7 @@ type SemaMutex struct {
 	s      *Semaphore
 	region *mmf.MemoryRegion
 	name   string
-	lwm    *lwMutex
+	lwm    *lwMutex[*semaWaiter]
 }
 
 // NewSemaMutex creates a new semaphore-based mutex.
