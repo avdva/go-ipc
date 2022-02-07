@@ -106,7 +106,7 @@ func (region *memoryRegion) Flush(async bool) error {
 	return nil
 }
 
-func sysProtAndFlagsFromFlag(mode int) (prot uint32, flags uint32, err error) {
+func sysProtAndFlagsFromFlag(mode int) (prot, flags uint32, err error) {
 	switch mode {
 	case MEM_READ_ONLY:
 		fallthrough

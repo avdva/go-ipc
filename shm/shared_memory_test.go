@@ -68,7 +68,7 @@ func argsForShmWriteCommand(name, typ string, offset int64, data []byte) []strin
 	return append(shmProgFiles, "-object="+name, "-type="+typ, "write", fmt.Sprintf("%d", offset), strBytes)
 }
 
-func createMemoryRegionSimple(objMode, regionMode int, size int64, offset int64) (*mmf.MemoryRegion, error) {
+func createMemoryRegionSimple(objMode, regionMode int, size, offset int64) (*mmf.MemoryRegion, error) {
 	object, err := NewMemoryObject(defaultObjectName, objMode, 0o666)
 	if err != nil {
 		return nil, err

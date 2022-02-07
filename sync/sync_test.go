@@ -72,7 +72,7 @@ func init() {
 	semaProgArgs = locate(semaProgPath)
 }
 
-func createMemoryRegionSimple(objMode, regionMode int, size int64, offset int64) (*mmf.MemoryRegion, error) {
+func createMemoryRegionSimple(objMode, regionMode int, size, offset int64) (*mmf.MemoryRegion, error) {
 	object, _, err := shm.NewMemoryObjectSize(testMemObj, objMode, 0o666, size)
 	if err != nil {
 		return nil, err

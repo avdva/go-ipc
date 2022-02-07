@@ -47,7 +47,7 @@ func GetAllocGranularity() int {
 }
 
 // OpenFileMapping is a wraper for windows syscall.
-func OpenFileMapping(access uint32, inheritHandle uint32, name string) (windows.Handle, error) {
+func OpenFileMapping(access, inheritHandle uint32, name string) (windows.Handle, error) {
 	namep, err := windows.UTF16PtrFromString(name)
 	if err != nil {
 		return 0, err
@@ -71,7 +71,7 @@ func OpenFileMapping(access uint32, inheritHandle uint32, name string) (windows.
 // We cannot use a call from golang.org/x/sys/windows, because it returns nil error, if the syscall returned a valid handle.
 // However, CreateFileMapping may return a valid handle along with ERROR_ALREADY_EXISTS, and in this case
 // we cannot find out, if the file existed before.
-func CreateFileMapping(fhandle windows.Handle, sa *windows.SecurityAttributes, prot uint32, maxSizeHigh uint32, maxSizeLow uint32, name string) (handle windows.Handle, err error) {
+func CreateFileMapping(fhandle windows.Handle, sa *windows.SecurityAttributes, prot, maxSizeHigh, maxSizeLow uint32, name string) (handle windows.Handle, err error) {
 	var namep *uint16
 	if len(name) > 0 {
 		namep, err = windows.UTF16PtrFromString(name)

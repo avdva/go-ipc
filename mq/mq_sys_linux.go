@@ -20,7 +20,7 @@ const (
 	cNOTIFY_COOKIE_LEN = 32
 )
 
-func initLinuxMqNotifications(ch chan<- int) (notifySocket int, cancelSocket int, err error) {
+func initLinuxMqNotifications(ch chan<- int) (notifySocket, cancelSocket int, err error) {
 	notifySocket, cancelSocket = -1, -1
 	defer func() {
 		if err != nil {
@@ -53,7 +53,7 @@ func initLinuxMqNotifications(ch chan<- int) (notifySocket int, cancelSocket int
 	return
 }
 
-func listenLinuxMqNotifications(ch chan<- int, notifySocket int, cancelSocket int) {
+func listenLinuxMqNotifications(ch chan<- int, notifySocket, cancelSocket int) {
 	var data [cNOTIFY_COOKIE_LEN]byte
 	r := &unix.FdSet{}
 	defer func() {

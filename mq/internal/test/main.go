@@ -133,7 +133,7 @@ func runCommand() error {
 	}
 }
 
-func parseTwoInts(opt string) (first int, second int, err error) {
+func parseTwoInts(opt string) (first, second int, err error) {
 	if len(opt) == 0 {
 		return
 	}

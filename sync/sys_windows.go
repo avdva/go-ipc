@@ -26,7 +26,7 @@ var (
 	procReleaseSemaphore = modkernel32.NewProc("ReleaseSemaphore")
 )
 
-func sys_OpenEvent(name string, desiredAccess uint32, inheritHandle uint32) (windows.Handle, error) {
+func sys_OpenEvent(name string, desiredAccess, inheritHandle uint32) (windows.Handle, error) {
 	namep, err := windows.UTF16PtrFromString(name)
 	if err != nil {
 		return 0, err
@@ -42,7 +42,7 @@ func sys_OpenEvent(name string, desiredAccess uint32, inheritHandle uint32) (win
 	return windows.Handle(h), nil
 }
 
-func sys_CreateEvent(name string, eventAttrs *windows.SecurityAttributes, manualReset uint32, initialState uint32) (handle windows.Handle, err error) {
+func sys_CreateEvent(name string, eventAttrs *windows.SecurityAttributes, manualReset, initialState uint32) (handle windows.Handle, err error) {
 	namep, err := windows.UTF16PtrFromString(name)
 	if err != nil {
 		return 0, err
@@ -65,7 +65,7 @@ func sys_CreateEvent(name string, eventAttrs *windows.SecurityAttributes, manual
 	return windows.Handle(h), err
 }
 
-func openOrCreateEvent(name string, flag int, initial int) (windows.Handle, error) {
+func openOrCreateEvent(name string, flag, initial int) (windows.Handle, error) {
 	var handle windows.Handle
 	creator := func(create bool) error {
 		var err error
@@ -127,7 +127,7 @@ func sys_ReleaseSemaphore(h windows.Handle, count int) (int, error) {
 	return int(prev), err
 }
 
-func sys_OpenSemaphore(name string, desiredAccess uint32, inheritHandle uint32) (windows.Handle, error) {
+func sys_OpenSemaphore(name string, desiredAccess, inheritHandle uint32) (windows.Handle, error) {
 	namep, err := windows.UTF16PtrFromString(name)
 	if err != nil {
 		return 0, err
@@ -143,7 +143,7 @@ func sys_OpenSemaphore(name string, desiredAccess uint32, inheritHandle uint32) 
 	return windows.Handle(h), nil
 }
 
-func openOrCreateSemaphore(name string, flag int, initial, maximum int) (windows.Handle, error) {
+func openOrCreateSemaphore(name string, flag, initial, maximum int) (windows.Handle, error) {
 	var handle windows.Handle
 	creator := func(create bool) error {
 		var err error

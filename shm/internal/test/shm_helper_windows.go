@@ -20,7 +20,7 @@ func newShmObject(name string, mode int, perm os.FileMode, typ string, size int)
 	}
 }
 
-func destroyShmObject(name string, typ string) error {
+func destroyShmObject(name, typ string) error {
 	switch typ {
 	case "default", "":
 		return shm.DestroyMemoryObject(name)

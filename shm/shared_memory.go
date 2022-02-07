@@ -13,11 +13,9 @@ import (
 
 var _ SharedMemoryObject = (*MemoryObject)(nil)
 
-var (
-	defaultMemObjectFinaliser = func(memObject *memoryObject) {
-		memObject.Close()
-	}
-)
+var defaultMemObjectFinaliser = func(memObject *memoryObject) {
+	memObject.Close()
+}
 
 // SharedMemoryObject is an interface, which must be implemented
 // by any implemetation of an object used for mapping into memory.

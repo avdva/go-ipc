@@ -34,7 +34,7 @@ func msgget(k common.Key, flags int) (int, error) {
 	return int(id), nil
 }
 
-func msgsnd(id int, typ int, data []byte, flags int) error {
+func msgsnd(id, typ int, data []byte, flags int) error {
 	messageLen := typeDataSize + len(data)
 	message := make([]byte, messageLen)
 	rawData := allocator.ByteSliceData(message)
@@ -54,7 +54,7 @@ func msgsnd(id int, typ int, data []byte, flags int) error {
 	return nil
 }
 
-func msgrcv(id int, data []byte, typ int, flags int) (int, error) {
+func msgrcv(id int, data []byte, typ, flags int) (int, error) {
 	messageLen := typeDataSize + len(data)
 	message := make([]byte, messageLen)
 	rawData := allocator.ByteSliceData(message)

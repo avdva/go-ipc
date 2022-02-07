@@ -39,7 +39,7 @@ func FutexWait(addr unsafe.Pointer, value int32, timeout time.Duration, flags in
 
 // FutexWake wakes count threads waiting on the futex.
 // Returns the number of woken threads.
-func FutexWake(addr unsafe.Pointer, count int32, flags int32) (int, error) {
+func FutexWake(addr unsafe.Pointer, count, flags int32) (int, error) {
 	var woken int32
 	err := common.UninterruptedSyscall(func() error {
 		var err error
@@ -52,7 +52,7 @@ func FutexWake(addr unsafe.Pointer, count int32, flags int32) (int, error) {
 	return 0, err
 }
 
-func sys_umtx_op(addr unsafe.Pointer, mode int32, val int32, ptr2, ts unsafe.Pointer) (int32, error) {
+func sys_umtx_op(addr unsafe.Pointer, mode, val int32, ptr2, ts unsafe.Pointer) (int32, error) {
 	r1, _, err := unix.Syscall6(unix.SYS__UMTX_OP,
 		uintptr(addr),
 		uintptr(mode),

@@ -34,7 +34,7 @@ func msgget(k common.Key, flags int) (int, error) {
 	return int(id), nil
 }
 
-func msgsnd(id int, typ int, data []byte, flags int) error {
+func msgsnd(id, typ int, data []byte, flags int) error {
 	messageLen := typeDataSize + len(data)
 	message := make([]byte, messageLen)
 	rawData := allocator.ByteSliceData(message)
@@ -54,7 +54,7 @@ func msgsnd(id int, typ int, data []byte, flags int) error {
 	return nil
 }
 
-func msgrcv(id int, data []byte, typ int, flags int) (int, error) {
+func msgrcv(id int, data []byte, typ, flags int) (int, error) {
 	messageLen := typeDataSize + len(data)
 	message := make([]byte, messageLen)
 	rawData := allocator.ByteSliceData(message)
@@ -73,7 +73,7 @@ func msgrcv(id int, data []byte, typ int, flags int) (int, error) {
 	return int(len), nil
 }
 
-func msgctl(id int, cmd int, buf *msqidDs) error {
+func msgctl(id, cmd int, buf *msqidDs) error {
 	_, _, err := unix.Syscall(unix.SYS_IPC, uintptr(cMSGCTL), uintptr(id), uintptr(cmd))
 	if err != syscall.Errno(0) {
 		return os.NewSyscallError("MSGCTL", err)

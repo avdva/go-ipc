@@ -109,7 +109,7 @@ func (obj *WindowsNativeMemoryObject) IsNative() bool {
 	return true
 }
 
-func sysProtAndFlagsFromFlag(flag int) (prot uint32, flags uint32, err error) {
+func sysProtAndFlagsFromFlag(flag int) (prot, flags uint32, err error) {
 	flag = common.FlagsForAccess(flag)
 	switch flag {
 	case os.O_RDONLY:
