@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/avdva/go-ipc/internal/allocator"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
 )
 
 // Constants for memory regions.

@@ -11,7 +11,7 @@ import (
 	"os"
 	"unsafe"
 
-	"github.com/avdva/go-ipc/internal/common"
+	"github.com/avdva/go-ipc/v2/internal/common"
 )
 
 const (

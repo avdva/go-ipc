@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/avdva/go-ipc/internal/allocator"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
 
 	"github.com/stretchr/testify/assert"
 )

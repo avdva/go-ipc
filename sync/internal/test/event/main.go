@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/avdva/go-ipc/sync"
+	"github.com/avdva/go-ipc/v2/sync"
 )
 
 var (

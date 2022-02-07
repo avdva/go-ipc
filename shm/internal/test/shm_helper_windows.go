@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/avdva/go-ipc/shm"
+	"github.com/avdva/go-ipc/v2/shm"
 )
 
 func newShmObject(name string, mode int, perm os.FileMode, typ string, size int) (shm.SharedMemoryObject, error) {

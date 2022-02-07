@@ -5,7 +5,7 @@ package shm
 import (
 	"os"
 
-	"github.com/avdva/go-ipc/mmf"
+	"github.com/avdva/go-ipc/v2/mmf"
 )
 
 func ExampleMemoryObject() {

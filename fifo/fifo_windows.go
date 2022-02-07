@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/avdva/go-ipc/internal/common"
+	"github.com/avdva/go-ipc/v2/internal/common"
 
 	"golang.org/x/sys/windows"
 )

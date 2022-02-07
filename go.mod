@@ -1,4 +1,4 @@
-module github.com/avdva/go-ipc
+module github.com/avdva/go-ipc/v2
 
 go 1.18
 

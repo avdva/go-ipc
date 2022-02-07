@@ -8,10 +8,10 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/avdva/go-ipc/internal/allocator"
-	"github.com/avdva/go-ipc/internal/helper"
-	"github.com/avdva/go-ipc/mmf"
-	"github.com/avdva/go-ipc/shm"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
+	"github.com/avdva/go-ipc/v2/internal/helper"
+	"github.com/avdva/go-ipc/v2/mmf"
+	"github.com/avdva/go-ipc/v2/shm"
 )
 
 // all implementations must satisfy IPCLocker interface.

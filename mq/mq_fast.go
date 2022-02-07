@@ -8,11 +8,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/avdva/go-ipc/internal/common"
-	"github.com/avdva/go-ipc/internal/helper"
-	"github.com/avdva/go-ipc/mmf"
-	"github.com/avdva/go-ipc/shm"
-	ipc_sync "github.com/avdva/go-ipc/sync"
+	"github.com/avdva/go-ipc/v2/internal/common"
+	"github.com/avdva/go-ipc/v2/internal/helper"
+	"github.com/avdva/go-ipc/v2/mmf"
+	"github.com/avdva/go-ipc/v2/shm"
+	ipc_sync "github.com/avdva/go-ipc/v2/sync"
 )
 
 const (

@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/avdva/go-ipc/internal/allocator"
-	sys "github.com/avdva/go-ipc/internal/sys/windows"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
+	sys "github.com/avdva/go-ipc/v2/internal/sys/windows"
 
 	"golang.org/x/sys/windows"
 )

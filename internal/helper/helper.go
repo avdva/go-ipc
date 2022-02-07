@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/avdva/go-ipc/mmf"
-	"github.com/avdva/go-ipc/shm"
+	"github.com/avdva/go-ipc/v2/mmf"
+	"github.com/avdva/go-ipc/v2/shm"
 )
 
 // CreateWritableRegion is a helper, which:

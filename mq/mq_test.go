@@ -12,10 +12,10 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/avdva/go-ipc/internal/allocator"
-	"github.com/avdva/go-ipc/internal/common"
-	testutil "github.com/avdva/go-ipc/internal/test"
-	ipc_sync "github.com/avdva/go-ipc/sync"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
+	"github.com/avdva/go-ipc/v2/internal/common"
+	testutil "github.com/avdva/go-ipc/v2/internal/test"
+	ipc_sync "github.com/avdva/go-ipc/v2/sync"
 
 	"github.com/stretchr/testify/assert"
 )

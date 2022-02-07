@@ -7,8 +7,8 @@ import (
 	"errors"
 	"unsafe"
 
-	"github.com/avdva/go-ipc/internal/allocator"
-	"github.com/avdva/go-ipc/internal/array"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
+	"github.com/avdva/go-ipc/v2/internal/array"
 )
 
 type message struct {

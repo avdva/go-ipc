@@ -9,8 +9,8 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/avdva/go-ipc/internal/allocator"
-	"github.com/avdva/go-ipc/internal/common"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
+	"github.com/avdva/go-ipc/v2/internal/common"
 )
 
 const (

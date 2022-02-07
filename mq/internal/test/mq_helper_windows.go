@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/avdva/go-ipc/mq"
+	"github.com/avdva/go-ipc/v2/mq"
 )
 
 func createMqWithType(name string, perm os.FileMode, typ, opt string) (mq.Messenger, error) {

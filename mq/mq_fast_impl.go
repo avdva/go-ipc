@@ -5,7 +5,7 @@ package mq
 import (
 	"unsafe"
 
-	"github.com/avdva/go-ipc/internal/allocator"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
 )
 
 const (

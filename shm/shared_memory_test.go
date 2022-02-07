@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	testutil "github.com/avdva/go-ipc/internal/test"
-	"github.com/avdva/go-ipc/mmf"
+	testutil "github.com/avdva/go-ipc/v2/internal/test"
+	"github.com/avdva/go-ipc/v2/mmf"
 
 	"github.com/stretchr/testify/assert"
 )

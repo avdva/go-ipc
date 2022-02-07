@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/avdva/go-ipc/internal/allocator"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
 
 	"golang.org/x/sys/unix"
 )

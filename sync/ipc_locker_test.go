@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/avdva/go-ipc/internal/allocator"
-	"github.com/avdva/go-ipc/internal/common"
-	testutil "github.com/avdva/go-ipc/internal/test"
-	"github.com/avdva/go-ipc/mmf"
-	"github.com/avdva/go-ipc/shm"
+	"github.com/avdva/go-ipc/v2/internal/allocator"
+	"github.com/avdva/go-ipc/v2/internal/common"
+	testutil "github.com/avdva/go-ipc/v2/internal/test"
+	"github.com/avdva/go-ipc/v2/mmf"
+	"github.com/avdva/go-ipc/v2/shm"
 
 	"github.com/stretchr/testify/assert"
 )

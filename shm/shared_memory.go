@@ -7,8 +7,8 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/avdva/go-ipc/internal/common"
-	"github.com/avdva/go-ipc/mmf"
+	"github.com/avdva/go-ipc/v2/internal/common"
+	"github.com/avdva/go-ipc/v2/mmf"
 )
 
 var _ SharedMemoryObject = (*MemoryObject)(nil)

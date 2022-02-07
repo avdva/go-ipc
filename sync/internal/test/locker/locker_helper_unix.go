@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"sync"
 
-	ipc_sync "github.com/avdva/go-ipc/sync"
+	ipc_sync "github.com/avdva/go-ipc/v2/sync"
 )
 
 func createLocker(typ, name string, flag int) (locker sync.Locker, err error) {

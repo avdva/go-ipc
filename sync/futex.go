@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/avdva/go-ipc/internal/common"
+	"github.com/avdva/go-ipc/v2/internal/common"
 )
 
 var _ waitWaker = (*futex)(nil)
