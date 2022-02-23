@@ -50,22 +50,22 @@ func (s *lwRWState) addWriters(count int64) {
 // this implementation is inspired by Jeff Preshing and his article at
 // http://preshing.com/20150316/semaphores-are-surprisingly-versatile/
 // and his c++ implementation (github.com/preshing/cpp11-on-multicore).
-type lwRWMutex struct {
-	rWaiter waitWaker
-	wWaiter waitWaker
+type lwRWMutex[wwImpl waitWaker] struct {
+	rWaiter wwImpl
+	wWaiter wwImpl
 	state   *int64
 }
 
-func newRWLightweightMutex(state unsafe.Pointer, rWaiter, wWaiter waitWaker) *lwRWMutex {
-	return &lwRWMutex{state: (*int64)(state), rWaiter: rWaiter, wWaiter: wWaiter}
+func newRWLightweightMutex[wwImpl waitWaker](state unsafe.Pointer, rWaiter, wWaiter wwImpl) *lwRWMutex[wwImpl] {
+	return &lwRWMutex[wwImpl]{state: (*int64)(state), rWaiter: rWaiter, wWaiter: wWaiter}
 }
 
 // init writes initial value into mutex's memory location.
-func (lwrw *lwRWMutex) init() {
+func (lwrw *lwRWMutex[wwImpl]) init() {
 	*lwrw.state = 0
 }
 
-func (lwrw *lwRWMutex) lock() {
+func (lwrw *lwRWMutex[wwImpl]) lock() {
 	new := (lwRWState)(atomic.AddInt64(lwrw.state, 1<<lwRWMWriterShift))
 	if new.readers() > 0 || new.writers() > 1 {
 		if err := lwrw.wWaiter.wait(0, -1); err != nil {
@@ -74,7 +74,7 @@ func (lwrw *lwRWMutex) lock() {
 	}
 }
 
-func (lwrw *lwRWMutex) rlock() {
+func (lwrw *lwRWMutex[wwImpl]) rlock() {
 	var new lwRWState
 	for {
 		old := (lwRWState)(atomic.LoadInt64(lwrw.state))
@@ -95,7 +95,7 @@ func (lwrw *lwRWMutex) rlock() {
 	}
 }
 
-func (lwrw *lwRWMutex) runlock() {
+func (lwrw *lwRWMutex[wwImpl]) runlock() {
 	new := (lwRWState)(atomic.AddInt64(lwrw.state, -1))
 	if new.readers() == lwRWMMask {
 		panic("unlock of unlocked mutex")
@@ -105,7 +105,7 @@ func (lwrw *lwRWMutex) runlock() {
 	}
 }
 
-func (lwrw *lwRWMutex) unlock() {
+func (lwrw *lwRWMutex[wwImpl]) unlock() {
 	var new lwRWState
 	for {
 		old := (lwRWState)(atomic.LoadInt64(lwrw.state))

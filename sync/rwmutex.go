@@ -17,11 +17,13 @@ var (
 	_ IPCLocker = (*RWMutex)(nil)
 )
 
+type Rww = lwRWMutex[*semaWaiter]
+
 // RWMutex is a mutex, that can be held by any number of readers or one writer.
 type RWMutex struct {
-	lwm    *lwRWMutex
+	lwm    *lwRWMutex[*semaWaiter]
 	region *mmf.MemoryRegion
-	wR, wW waitWaker
+	wR, wW *semaWaiter
 	name   string
 }
 
@@ -118,7 +120,7 @@ func (r *rlocker) Lock()        { (*RWMutex)(r).RLock() }
 func (r *rlocker) Unlock()      { (*RWMutex)(r).RUnlock() }
 func (r *rlocker) Close() error { return (*RWMutex)(r).Close() }
 
-func makeRWMWaiters(name string, flag int, perm os.FileMode) (waitWaker, waitWaker, error) {
+func makeRWMWaiters(name string, flag int, perm os.FileMode) (*semaWaiter, *semaWaiter, error) {
 	rSema, err := NewSemaphore(name+".rs", flag, perm, 0)
 	if err != nil {
 		return nil, nil, fmt.Errorf("creating r/sema: %w", err)
@@ -132,9 +134,8 @@ func makeRWMWaiters(name string, flag int, perm os.FileMode) (waitWaker, waitWak
 	return newSemaWaiter(rSema), newSemaWaiter(wSema), nil
 }
 
-func closeRWWaiters(wR, wW waitWaker) error {
-	sR, sW := wR.(*semaWaiter).s, wW.(*semaWaiter).s
-	e1, e2 := sR.Close(), sW.Close()
+func closeRWWaiters(wR, wW *semaWaiter) error {
+	e1, e2 := wR.s.Close(), wW.s.Close()
 	if e1 != nil {
 		return fmt.Errorf("closing r/sema: %w", e1)
 	}

@@ -19,7 +19,7 @@ import (
 type event struct {
 	name   string
 	region *mmf.MemoryRegion
-	lwe    *lwEvent
+	lwe    *lwEvent[*futex]
 }
 
 func newEvent(name string, flag int, perm os.FileMode, initial bool) (*event, error) {

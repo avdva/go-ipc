@@ -21,16 +21,16 @@ const (
 // state is a shared variable, that contains event state:
 //	the highest bit is a signal bit
 //	all other bits define the number of waiters.
-type lwEvent struct {
+type lwEvent[wwImpl waitWaker] struct {
 	state *int32
-	ww    waitWaker
+	ww    wwImpl
 }
 
-func newLightweightEvent(state unsafe.Pointer, ww waitWaker) *lwEvent {
-	return &lwEvent{state: (*int32)(state), ww: ww}
+func newLightweightEvent[wwImpl waitWaker](state unsafe.Pointer, ww wwImpl) *lwEvent[wwImpl] {
+	return &lwEvent[wwImpl]{state: (*int32)(state), ww: ww}
 }
 
-func (e *lwEvent) init(set bool) {
+func (e *lwEvent[wwImpl]) init(set bool) {
 	val := int32(0)
 	if set {
 		val = math.MinInt32
@@ -38,7 +38,7 @@ func (e *lwEvent) init(set bool) {
 	*e.state = val
 }
 
-func (e *lwEvent) set() {
+func (e *lwEvent[wwImpl]) set() {
 	var old int32
 	for {
 		old = atomic.LoadInt32(e.state)
@@ -55,7 +55,7 @@ func (e *lwEvent) set() {
 	}
 }
 
-func (e *lwEvent) obtainOrChange(inc int32) (new int32, obtained bool) {
+func (e *lwEvent[wwImpl]) obtainOrChange(inc int32) (new int32, obtained bool) {
 	for {
 		old := atomic.LoadInt32(e.state)
 		new = old
@@ -76,7 +76,7 @@ func (e *lwEvent) obtainOrChange(inc int32) (new int32, obtained bool) {
 	}
 }
 
-func (e *lwEvent) waitTimeout(timeout time.Duration) bool {
+func (e *lwEvent[wwImpl]) waitTimeout(timeout time.Duration) bool {
 	// first, we are trying to catch the event, or add us as a waiter.
 	new, obtained := e.obtainOrChange(1)
 	if obtained {
